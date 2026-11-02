@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="robots" content="noindex">
+<title>OZB · Espace admin</title>
+<style>
+:root{--bg:#050b12;--s:#0e1b28;--s2:#132536;--l:#1f3649;--fg:#eaf2f6;--m:#8fa6b7;--a:#3fd0c9;--w:#5ad48a;--r:#f0897c}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.45 system-ui,-apple-system,sans-serif;padding:16px;max-width:820px;margin:auto}
+h1{font-size:24px;margin:6px 0 2px}h2{font-size:17px;margin:0 0 10px}p.m{color:var(--m);margin:0 0 14px}
+.card{background:var(--s);border:1px solid var(--l);border-radius:16px;padding:16px;margin:14px 0}
+input,select,textarea{width:100%;background:var(--s2);color:var(--fg);border:1px solid var(--l);border-radius:10px;padding:10px;font:inherit}
+button{background:var(--a);color:#03201e;border:0;border-radius:10px;padding:10px 14px;font-weight:700;font:inherit;font-weight:700;cursor:pointer}
+button.s{background:var(--s2);color:var(--fg);border:1px solid var(--l)}button.d{background:transparent;color:var(--r);border:1px solid var(--r)}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.g{display:grid;gap:8px}.g2{grid-template-columns:1fr 1fr}
+table{width:100%;border-collapse:collapse;font-size:13.5px}td,th{padding:7px 6px;border-top:1px solid var(--l);text-align:left;vertical-align:top}
+code{font-size:14px;color:var(--a)}.ok{color:var(--w)}.ko{color:var(--r)}.mut{color:var(--m)}
+.tk{display:grid;grid-template-columns:1.4fr 1.6fr .6fr .8fr .6fr .6fr auto;gap:6px;margin-bottom:6px}
+@media(max-width:640px){.tk{grid-template-columns:1fr 1fr}.tk .x{grid-column:span 2}}
+#msg{position:fixed;left:16px;right:16px;bottom:16px;background:var(--s2);border:1px solid var(--a);border-radius:12px;padding:12px;display:none}
+</style></head><body>
+<h1>Espace OZB</h1><p class="m">Codes d'accès VIP et tickets du jour. Page privée : ne la partage pas.</p>
+
+<div class="card" id="login"><h2>Clé admin</h2><div class="row"><input id="key" type="password" placeholder="Ta clé admin" style="flex:1"><button id="go">Entrer</button></div></div>
+
+<div id="main" style="display:none">
+<div class="card"><h2>Créer des codes VIP</h2>
+<p class="m">Un code par membre. Il ne marche que sur le premier téléphone qui l'active.</p>
+<div class="g g2"><label>Nombre<input id="n" type="number" value="1" min="1" max="200"></label><label>Valable (jours)<input id="days" type="number" value="31" min="1" max="400"></label></div>
+<label style="display:block;margin-top:8px">Pseudos (facultatif, un par ligne, dans l'ordre)<textarea id="labels" rows="3" placeholder="@pseudo_telegram"></textarea></label>
+<div class="row" style="margin-top:10px"><button id="create">Créer</button></div>
+<div id="created" style="margin-top:10px"></div></div>
+
+<div class="card"><div class="row" style="justify-content:space-between"><h2>Codes</h2><button class="s" id="refresh">Actualiser</button></div><div id="list" class="mut">…</div></div>
+
+<div class="card"><h2>Tickets OZB du jour</h2><p class="m">Ce que voient les membres VIP dans l'app. « Publier » remplace la liste du jour.</p>
+<div id="tickets"></div><div class="row"><button class="s" id="add">+ Ticket</button><button id="publish">Publier</button><button class="d" id="clear">Vider</button></div></div>
+</div>
+<div id="msg"></div>
+<script>
+const $ = (id) => document.getElementById(id);
+const API = /^(localhost|127\.0\.0\.1)$/.test(location.hostname) || /\.netlify\.app$/.test(location.hostname) ? "/api/" : "https://ozb-bankroll.netlify.app/api/";
+let KEY = ""; try { KEY = sessionStorage.getItem("ozb-admin") || ""; } catch (e) {}
+const msg = (t) => { const m = $("msg"); m.textContent = t; m.style.display = "block"; clearTimeout(msg.t); msg.t = setTimeout(() => (m.style.display = "none"), 3500); };
+async function api(action, extra) {
+  const r = await fetch(API + "admin", { method: "POST", headers: { "content-type": "text/plain;charset=UTF-8" }, body: JSON.stringify(Object.assign({ key: KEY, action }, extra || {})) });
+  const j = await r.json().catch(() => ({})); if (!r.ok) throw new Error(j.error || "Erreur " + r.status); return j;
+}
+const esc = (s) => String(s == null ? "" : s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const d = (t) => (t ? new Date(t).toLocaleDateString("fr-FR", { day: "numeric", month: "short" }) : "—");
+async function enter() {
+  KEY = $("key").value.trim() || KEY;
+  try { await api("getFeed"); try { sessionStorage.setItem("ozb-admin", KEY); } catch (e) {} $("login").style.display = "none"; $("main").style.display = "block"; list(); loadFeed(); }
+  catch (e) { msg(e.message); }
+}
+async function list() {
+  try { const j = await api("list");
+    $("list").innerHTML = j.codes.length ? "<table><tr><th>Code</th><th>Membre</th><th>État</th><th>Expire</th><th></th></tr>" + j.codes.map((c) => "<tr><td><code>" + esc(c.code) + "</code></td><td>" + esc(c.label || "—") + "</td><td>" + (c.revoked ? '<span class="ko">révoqué</span>' : c.expires < Date.now() ? '<span class="ko">expiré</span>' : c.active ? '<span class="ok">activé ' + d(c.activatedAt) + "</span>" : '<span class="mut">pas encore activé</span>') + "</td><td>" + d(c.expires) + '</td><td class="row"><button class="s" data-a="copy" data-c="' + c.code + '">Copier</button><button class="s" data-a="extend" data-c="' + c.code + '">+31 j</button><button class="s" data-a="reset" data-c="' + c.code + '">Changer de tel</button>' + (c.revoked ? '<button class="s" data-a="unrevoke" data-c="' + c.code + '">Réactiver</button>' : '<button class="d" data-a="revoke" data-c="' + c.code + '">Révoquer</button>') + "</td></tr>").join("") + "</table>" : "Aucun code pour l'instant.";
+  } catch (e) { msg(e.message); }
+}
+const row = (t) => '<div class="tk"><input placeholder="Match (Lille – Lens)" value="' + esc(t.match) + '" data-k="match"><input placeholder="Pari (Lille gagne)" value="' + esc(t.pick) + '" data-k="pick"><input placeholder="Cote" inputmode="decimal" value="' + esc(t.odds || "") + '" data-k="odds"><select data-k="type">' + ["safe", "value", "fun", "perso"].map((x) => "<option" + (t.type === x ? " selected" : "") + ">" + x + "</option>").join("") + '</select><input placeholder="% mise" inputmode="decimal" value="' + esc(t.pct || "") + '" data-k="pct"><input placeholder="Heure" value="' + esc(t.time || "") + '" data-k="time"><button class="d x" data-a="rm">✕</button></div>';
+async function loadFeed() { try { const j = await api("getFeed"); $("tickets").innerHTML = (j.tickets && j.tickets.length ? j.tickets : [{}]).map(row).join(""); } catch (e) { msg(e.message); } }
+$("go").onclick = enter; $("key").onkeydown = (e) => { if (e.key === "Enter") enter(); };
+$("refresh").onclick = list;
+$("create").onclick = async () => {
+  try { const labels = $("labels").value.split("\n").map((s) => s.trim()).filter(Boolean); const n = Math.max(+$("n").value || 1, labels.length);
+    const j = await api("create", { n, days: +$("days").value || 31, labels });
+    $("created").innerHTML = '<p class="m">À envoyer en privé, un code par membre :</p><textarea rows="' + Math.min(10, j.codes.length + 1) + '" readonly>' + j.codes.map((c, i) => (labels[i] ? labels[i] + " : " : "") + c).join("\n") + "</textarea>"; list();
+  } catch (e) { msg(e.message); }
+};
+document.addEventListener("click", async (e) => {
+  const b = e.target.closest("[data-a]"); if (!b) return; const c = b.dataset.c;
+  try {
+    if (b.dataset.a === "copy") { await navigator.clipboard.writeText(c); msg("Copié : " + c); }
+    if (b.dataset.a === "extend") { await api("update", { code: c, extendDays: 31 }); msg("Prolongé de 31 jours"); list(); }
+    if (b.dataset.a === "reset") { await api("update", { code: c, resetDevice: true }); msg("Le code pourra être activé sur un nouveau téléphone"); list(); }
+    if (b.dataset.a === "revoke") { await api("update", { code: c, revoke: true }); msg("Code révoqué"); list(); }
+    if (b.dataset.a === "unrevoke") { await api("update", { code: c, unrevoke: true }); msg("Code réactivé"); list(); }
+    if (b.dataset.a === "rm") b.closest(".tk").remove();
+  } catch (err) { msg(err.message); }
+});
+$("add").onclick = () => $("tickets").insertAdjacentHTML("beforeend", row({}));
+$("publish").onclick = async () => {
+  const tickets = [...document.querySelectorAll(".tk")].map((r) => { const o = {}; r.querySelectorAll("[data-k]").forEach((i) => (o[i.dataset.k] = i.value.replace(",", "."))); return o; });
+  try { const j = await api("setFeed", { tickets }); msg(j.count + " ticket(s) publié(s)"); } catch (e) { msg(e.message); }
+};
+$("clear").onclick = async () => { try { await api("setFeed", { tickets: [] }); $("tickets").innerHTML = row({}); msg("Tickets du jour vidés"); } catch (e) { msg(e.message); } };
+if (KEY) enter();
+</script></body></html>
