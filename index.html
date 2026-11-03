@@ -1179,13 +1179,22 @@ textarea.inp{min-height:130px;padding:12px 14px;resize:vertical;font-size:15px}
       S.tier = "vip"; S.trialEnds = null; S.vip = { token: r.data.token, expires: r.data.expires, checked: Date.now(), code: code.slice(0, 8) + "…" }; save(); loadVipFeed(); return { ok: true };
     } catch (e) { return { ok: false, error: "Pas de connexion. Réessaie quand tu as du réseau." }; }
   }
+  /* Paiement Whop : liens de paiement par formule (vides tant que les prix ne sont pas créés sur Whop) */
+  const CHECKOUT = { founder: "", month: "", year: "" };
+  const checkoutUrl = (sel) => (sel === "month" ? CHECKOUT.founder || CHECKOUT.month : CHECKOUT[sel]) || "";
+  async function whopActivate(key) {
+    try { const r = await api("whop/activate", { method: "POST", body: JSON.stringify({ key: key, device: DEVICE }) });
+      if (!r.ok) return { ok: false, error: r.data.error || "Activation impossible pour l'instant." };
+      S.tier = r.data.tier === "vip" ? "vip" : "premium"; S.trialEnds = null; S.vip = { token: r.data.token, expires: r.data.expires, checked: Date.now(), src: "whop", code: String(key).slice(0, 6) + "…" }; save(); if (S.tier === "vip") loadVipFeed(); return { ok: true, tier: S.tier };
+    } catch (e) { return { ok: false, error: "Pas de connexion. Réessaie quand tu as du réseau." }; }
+  }
   /* revérifie l'accès VIP au plus une fois par jour ; hors connexion, l'accès reste jusqu'à son expiration */
   async function vipCheck(force) {
     if (!S || !S.vip || !S.vip.token) return;
     if (!force && S.vip.checked && Date.now() - S.vip.checked < 864e5 && S.vip.expires > Date.now()) return;
     try { const r = await api("vip/check", { method: "POST", body: JSON.stringify({ token: S.vip.token, device: DEVICE }) });
-      if (r.ok) { S.vip = Object.assign(S.vip, { token: r.data.token, expires: r.data.expires, checked: Date.now() }); save(); }
-      else if (r.status === 401 || r.status === 403) { S.tier = "free"; S.vipEnded = r.data.error || "Ton accès VIP n'est plus actif."; S.vip = null; save(); render(); }
+      if (r.ok) { S.vip = Object.assign(S.vip, { token: r.data.token, expires: r.data.expires, checked: Date.now() }); if (r.data.tier === "vip" || r.data.tier === "premium") S.tier = r.data.tier; save(); }
+      else if (r.status === 401 || r.status === 403) { S.tier = "free"; S.vipEnded = r.data.error || "Ton accès n'est plus actif."; S.vip = null; save(); render(); }
     } catch (e) { if (S.vip.expires < Date.now()) { S.tier = "free"; S.vip = null; save(); render(); } }
   }
   async function loadVipFeed() {
@@ -1223,13 +1232,73 @@ textarea.inp{min-height:130px;padding:12px 14px;resize:vertical;font-size:15px}
     if (t.ozbId != null && !/^[\w-]{1,64}$/.test(String(t.ozbId))) t.ozbId = null;
     return t;
   }
+  const isObj = (x) => !!x && typeof x === "object" && !Array.isArray(x);
+  const isNum = (x) => typeof x === "number" && isFinite(x);
+  const PHOTO_RE = /^data:image\/(png|jpeg|webp);base64,[A-Za-z0-9+/]+=*$/;
+  /* style connu : propriété propre de STYLES (pas « toString », « constructor »…) */
+  const isStyle = (s) => typeof s === "string" && Object.prototype.hasOwnProperty.call(O.STYLES, s);
+  const DAY_RE = /^\d{4}-\d{2}-\d{2}$/;
+  /* Délais d'attente du plan adaptatif, rangés sous des clés « dim:clé » (ex. « league:Ligue 1 ») que cleanDeep supprimerait :
+     on les lit dans la donnée brute, clé sans caractère dangereux, valeur = une date */
+  function cleanDays(m) {
+    const o = {};
+    if (isObj(m)) Object.keys(m).slice(0, 500).forEach((k) => { const kk = k.replace(BAD_CH, "").slice(0, 120); if (kk && kk !== "__proto__" && kk !== "constructor" && kk !== "prototype" && DAY_RE.test(m[k] || "")) o[kk] = m[k]; });
+    return o;
+  }
+  /* Plan de mise : style connu, fourchettes [min, max] dans les bornes de l'app (0,25 à 10 %), plafond du jour de 5 à 40 % */
+  function cleanPlan(p, raw) {
+    const style = isObj(p) && isStyle(p.style) ? p.style : "equilibre", def = O.STYLES[style];
+    const ranges = {};
+    TYPE_IDS.forEach((k) => { const r = isObj(p) && isObj(p.ranges) ? p.ranges[k] : null; ranges[k] = Array.isArray(r) && r.length === 2 && r.every(isNum) && r[0] >= 0.25 && r[0] <= r[1] && r[1] <= 10 ? r : def.ranges[k].slice(); });
+    const cap = isObj(p) && isNum(p.dayCap) && p.dayCap >= 5 && p.dayCap <= 40 ? p.dayCap : def.dayCap;
+    const out = Object.assign({}, isObj(p) ? p : {}, { style: style, ranges: ranges, dayCap: cap });
+    if (!isObj(out.adapt)) delete out.adapt;
+    else {
+      const A = out.adapt, rawA = isObj(raw) && isObj(raw.adapt) ? raw.adapt : {};
+      A.overrides = (Array.isArray(A.overrides) ? A.overrides : []).filter((o) => isObj(o) && typeof o.dim === "string" && typeof o.key === "string" && isStyle(o.style));
+      A.log = Array.isArray(A.log) ? A.log.filter(isObj) : [];
+      A.proposed = cleanDays(rawA.proposed); A.reverted = cleanDays(rawA.reverted);
+    }
+    return out;
+  }
+  /* Champs utilisés tels quels : compteur d'imports du mois, sports et bookmakers favoris, préférences */
+  function cleanSmall(d, base) {
+    const im = d.imports;
+    d.imports = isObj(im) && /^(\d{4}-\d{2})?$/.test(im.month || "") && Number.isInteger(im.n) && im.n >= 0 && im.n <= 1e4 ? { month: im.month || "", n: im.n } : base.imports;
+    const ob = isObj(d.onboard) ? d.onboard : base.onboard;
+    ob.done = ob.done === true;
+    if (ob.sports != null) ob.sports = Array.isArray(ob.sports) ? ob.sports.filter((s) => /^[a-z]{1,16}$/.test(s || "")).slice(0, 10) : [];
+    if (ob.books != null) ob.books = Array.isArray(ob.books) ? ob.books.filter((s) => typeof s === "string" && s).slice(0, 20) : [];
+    d.onboard = ob;
+    const pr = isObj(d.prefs) ? d.prefs : base.prefs;
+    Object.keys(pr).forEach((k) => { pr[k] = pr[k] === true; });
+    d.prefs = pr;
+  }
   function cleanState(d, strict) {
-    if (!d || typeof d !== "object" || d.v !== 1 || !Array.isArray(d.tickets) || (strict && !d.user)) return null;
+    if (!d || typeof d !== "object" || d.v !== 1 || !Array.isArray(d.tickets) || (strict && !isObj(d.user))) return null;
+    /* la photo (image encodée) dépasse la limite de longueur de cleanDeep : on la vérifie à part */
+    const photo = isObj(d.user) && typeof d.user.photo === "string" && d.user.photo.length < 2e6 && PHOTO_RE.test(d.user.photo) ? d.user.photo : null;
+    const rawPlan = d.plan;
     d = cleanDeep(d, 0); if (!d || !Array.isArray(d.tickets)) return null;
+    const base = O.newState();
     d.tickets = d.tickets.map(cleanTicket).filter(Boolean);
-    d.moves = Array.isArray(d.moves) ? d.moves : [];
-    d.start = typeof d.start === "number" ? d.start : 0;
+    /* une donnée de forme inattendue ne doit jamais bloquer l'app au démarrage */
+    const seen = new Set();
+    d.moves = (Array.isArray(d.moves) ? d.moves : []).filter((m) => isObj(m) && DAY_RE.test(m.date || "") && isNum(m.amount)).map((m, i) => {
+      let id = typeof m.id === "string" && /^[\w-]{1,48}$/.test(m.id) ? m.id : "m" + i;
+      if (seen.has(id)) id = id.slice(0, 40) + "-" + i;
+      seen.add(id); return { id: id, date: m.date, amount: m.amount };
+    });
+    d.start = isNum(d.start) ? d.start : 0;
+    d.startDate = DAY_RE.test(d.startDate || "") ? d.startDate : base.startDate;
+    cleanSmall(d, base);
+    d.plan = cleanPlan(d.plan, rawPlan);
+    d.user = isObj(d.user) ? d.user : null;
+    if (d.user) { d.user.photo = photo; if (!AV_COLORS.includes(d.user.color)) d.user.color = AV_COLORS[0]; if (typeof d.user.name !== "string") d.user.name = ""; }
     if (!["free", "premium", "vip"].includes(d.tier)) d.tier = "free";
+    /* une fin d'essai illisible vaut « essai terminé », jamais « Premium sans fin » */
+    if (d.trialEnds != null && !isNum(d.trialEnds)) { d.trialEnds = null; if (d.tier === "premium") d.tier = "free"; }
+    if (!isNum(d.pauseUntil)) d.pauseUntil = null;
     return d;
   }
   /* Liens externes : uniquement https et uniquement les sites de paris connus (pas de faux site ouvert depuis l'app) */
@@ -1249,10 +1318,13 @@ textarea.inp{min-height:130px;padding:12px 14px;resize:vertical;font-size:15px}
   const importsLeft = () => (isPremium() ? Infinity : Math.max(0, FREE_IMPORTS - importsUsed()));
   const paused = () => S && S.pauseUntil && S.pauseUntil > Date.now();
   const initials = () => ((S && S.user && S.user.name) || "?").trim().charAt(0).toUpperCase() || "?";
+  /* la photo (jusqu'à 2 Mo de texte) n'est vérifiée qu'une fois, pas à chaque affichage */
+  let photoSeen = null, photoOk = false;
+  const okPhoto = (p) => { if (p !== photoSeen) { photoSeen = p; photoOk = typeof p === "string" && PHOTO_RE.test(p); } return photoOk; };
   const avatarHtml = (cls) => {
     const u = S.user || {};
-    if (u.photo) return '<span class="' + cls + '" style="background:url(' + esc(u.photo) + ') center/cover"></span>';
-    return '<span class="' + cls + '" style="background:linear-gradient(160deg,#fff4,' + (u.color || AV_COLORS[0]) + ' 40%)">' + esc(initials()) + "</span>";
+    if (u.photo && okPhoto(u.photo)) return '<span class="' + cls + '" style="background:url(' + u.photo + ') center/cover"></span>';
+    return '<span class="' + cls + '" style="background:linear-gradient(160deg,#fff4,' + (AV_COLORS.includes(u.color) ? u.color : AV_COLORS[0]) + ' 40%)">' + esc(initials()) + "</span>";
   };
 
   /* ---------- ⓘ explications pour débutants (chaque texte suit le calcul réel du moteur) ---------- */
@@ -2234,8 +2306,10 @@ textarea.inp{min-height:130px;padding:12px 14px;resize:vertical;font-size:15px}
     S = O.newState({ start: 400 }); S.user = keepUser || { name: "Alex", color: AV_COLORS[0] };
     S.onboard = { done: true, sports: ["foot", "tennis"], books: ["Winamax", "Betclic"] };
     S.demo = true; S.tier = "premium"; S.trialEnds = null;
+    /* données d'exemple sur les ~60 derniers jours, quel que soit le jour du mois (sinon un début de mois paraît vide) */
     const now = new Date(), y = now.getFullYear(), mo = now.getMonth(), td = now.getDate();
-    const prev = new Date(y, mo - 1, 1); S.startDate = O.dkey(prev);
+    const ago = (n) => O.dkey(new Date(y, mo, td - n));
+    S.startDate = ago(62);
     const M = [["PSG – Nantes", "Victoire PSG"], ["Arsenal – Chelsea", "Plus de 2,5 buts"], ["Sinner – Rune", "Sinner gagne"], ["Lens – Rennes", "Les 2 marquent"], ["Real – Getafe", "Victoire Real"], ["Inter – Roma", "Inter ou nul"], ["Marseille – Lyon", "Plus de 2,5 buts"], ["Alcaraz – Zverev", "Alcaraz gagne"], ["Liverpool – Everton", "Victoire Liverpool"], ["Monaco – Brest", "Monaco gagne"]];
     let seed = 7; const rnd = () => (seed = (seed * 9301 + 49297) % 233280) / 233280;
     const add = (date, type, legsN, odds, pctv, status, book, market) => {
@@ -2244,14 +2318,13 @@ textarea.inp{min-height:130px;padding:12px 14px;resize:vertical;font-size:15px}
       t.basis = O.available(S); t.stake = r2(t.basis * pctv / 100); S.tickets.push(t);
       if (status !== "open") { t.status = status; t.settledAt = Date.now() + S.tickets.length; }
     };
-    const day = (yy, mm, dd) => O.dkey(new Date(yy, mm, dd));
     const prevDays = [2, 3, 5, 6, 8, 10, 12, 13, 15, 17, 19, 20, 22, 24, 26, 27];
-    prevDays.forEach((d, i) => add(day(y, mo - 1, d), i % 4 === 3 ? "value" : "safe", i % 5 === 4 ? 3 : 1, i % 4 === 3 ? 2.2 : 1.75, i % 4 === 3 ? 1.5 : 4, i % 3 === 2 ? "L" : "W", i % 2 ? "Betclic" : "Winamax", i % 2 ? "Plus/moins" : "Résultat"));
-    S.moves.push({ id: uid(), date: day(y, mo, 1), amount: 50 });
+    prevDays.forEach((d, i) => add(ago(60 - d), i % 4 === 3 ? "value" : "safe", i % 5 === 4 ? 3 : 1, i % 4 === 3 ? 2.2 : 1.75, i % 4 === 3 ? 1.5 : 4, i % 3 === 2 ? "L" : "W", i % 2 ? "Betclic" : "Winamax", i % 2 ? "Plus/moins" : "Résultat"));
+    S.moves.push({ id: uid(), date: ago(29), amount: 50 });
     const plan = [[1, "safe", 1, 1.72, 4, "W"], [2, "fun", 3, 6.5, 1, "L"], [3, "safe", 1, 1.85, 4, "W"], [4, "value", 1, 2.15, 1.5, "W"], [6, "safe", 2, 2.05, 4, "L"], [7, "perso", 4, 9.2, 6, "L"], [8, "safe", 1, 1.68, 4, "W"], [9, "safe", 1, 1.8, 4, "W"],
       [11, "fun", 3, 5.8, 1, "L"], [12, "value", 1, 2.3, 1.5, "L"], [13, "safe", 1, 1.75, 4, "W"], [15, "safe", 1, 1.9, 4, "W"], [16, "perso", 3, 7.4, 3, "L"], [18, "safe", 1, 1.7, 4, "W"], [19, "value", 1, 2.05, 1.5, "W"], [21, "safe", 2, 1.95, 4, "W"],
       [22, "fun", 3, 6.1, 1, "L"], [23, "safe", 1, 1.78, 4, "L"], [25, "safe", 1, 1.82, 4, "W"], [26, "value", 1, 2.2, 1.5, "W"], [27, "safe", 1, 1.74, 4, "W"]];
-    plan.filter((p) => p[0] < td).forEach((p, i) => add(day(y, mo, p[0]), p[1], p[2], p[3], p[4], p[5], i % 3 ? "Winamax" : "Betclic", p[2] > 1 ? "Plus/moins" : i % 2 ? "Résultat" : "Les 2 marquent"));
+    plan.forEach((p, i) => add(ago(28 - p[0]), p[1], p[2], p[3], p[4], p[5], i % 3 ? "Winamax" : "Betclic", p[2] > 1 ? "Plus/moins" : i % 2 ? "Résultat" : "Les 2 marquent"));
     add(today(), "safe", 1, 1.85, 4, "open", "Winamax", "Résultat");
     add(today(), "value", 1, 2.1, 1.5, "open", "Betclic", "Plus/moins");
     S.tickets[S.tickets.length - 2].legs = [{ match: "RC Lens – LOSC Lille", pick: "Victoire Lens" }];
@@ -2338,6 +2411,7 @@ textarea.inp{min-height:130px;padding:12px 14px;resize:vertical;font-size:15px}
       case "pw-go":
         if (UI.pwSel === "vip") { window.open(VIP_URL, "_blank", "noopener"); toast("Ouverture de la page VIP OZB"); break; }
         if (isPremium()) break;
+        if (checkoutUrl(UI.pwSel)) { window.open(checkoutUrl(UI.pwSel), "_blank", "noopener"); toast("Paiement sécurisé sur Whop. Reviens ici ensuite avec ta clé."); break; }
         if (S.trialUsed || UI.pwSel !== "month") { toast("Paiement pas encore branché dans cette version de test."); break; }
         S.tier = "premium"; S.trialEnds = Date.now() + 7 * 864e5; S.trialUsed = true; S.trialPlan = "month"; S.trialStarted = Date.now(); S.trialEndedNotice = false;
         save(); closeSheet(); render(); confetti(); toast("Essai activé jusqu'au " + new Date(S.trialEnds).toLocaleDateString("fr-FR", { day: "numeric", month: "long" }) + ", puis " + PRICE[S.trialPlan]); break;
@@ -2477,7 +2551,7 @@ textarea.inp{min-height:130px;padding:12px 14px;resize:vertical;font-size:15px}
         sheet(sheetHead("Inviter un ami") + '<p class="lead">Ton ami reçoit 7 jours de Premium. Toi aussi, à son inscription.</p><div class="card" style="text-align:center"><div class="label">Ton code</div><div class="mega" style="font-size:44px;color:var(--accent)">' + code + '</div></div><button class="btn btn-primary block" data-act="copy-text" data-v="Rejoins-moi sur OZB Bankroll avec mon code ' + code + ' : 7 jours de Premium offerts.">' + I("copy") + "Copier l'invitation</button>"); break;
       }
       case "copy-text": try { await navigator.clipboard.writeText(el.dataset.v); toast("Invitation copiée"); } catch (err) { toast(el.dataset.v); } break;
-      case "code": sheet(sheetHead("J'ai un code") + '<div class="field"><label class="label" for="cd">Ton code</label><input class="inp" id="cd" autocapitalize="characters" placeholder="OZB-…" autofocus></div><button class="btn btn-primary block" data-act="code-go">Valider</button><p class="hint">Membre du VIP OZB ? Ton code personnel (VIP-XXXX-XXXX) t\'est envoyé en privé. Il ne marche que sur un seul téléphone.</p>'); break;
+      case "code": sheet(sheetHead("J'ai un code") + '<div class="field"><label class="label" for="cd">Ton code</label><input class="inp" id="cd" autocapitalize="characters" placeholder="VIP-XXXX-XXXX" autofocus></div><button class="btn btn-primary block" data-act="code-go">Valider</button><p class="hint">Membre du VIP OZB ? Ton code personnel (VIP-XXXX-XXXX) t\'est envoyé en privé.</p><p class="hint">Tu as payé sur Whop ? Colle la <b>clé de licence</b> de ta commande (Whop › Commandes › OZB Bankroll). Un code ou une clé ne marche que sur un seul téléphone.</p>'); break;
       case "code-go": {
         const c = (document.getElementById("cd").value || "").trim().toUpperCase().replace(/\s+/g, "");
         if (/^VIP-?[A-Z0-9]{4}-?[A-Z0-9]{4}$/.test(c)) {
@@ -2487,6 +2561,13 @@ textarea.inp{min-height:130px;padding:12px 14px;resize:vertical;font-size:15px}
           break;
         }
         if (PROD && /-TEST$/.test(c)) { toast("Code inconnu. Vérifie l'orthographe."); break; }
+        const raw = (document.getElementById("cd").value || "").trim().replace(/\s+/g, "");
+        if (!/^OZB-/.test(c) && /^[A-Za-z0-9_-]{6,80}$/.test(raw)) {
+          el.disabled = true; el.textContent = "Vérification…";
+          const r = await whopActivate(raw);
+          if (r.ok) { closeSheet(); render(); confetti(r.tier === "vip" ? "gold" : undefined); toast(r.tier === "vip" ? "Bienvenue dans le VIP : tout Premium est débloqué" : "Premium activé, merci !"); } else { el.disabled = false; el.textContent = "Valider"; toast(r.error); }
+          break;
+        }
         if (c === "OZB-VIP-TEST") { S.tier = "vip"; S.trialEnds = null; save(); closeSheet(); render(); confetti("gold"); toast("Bienvenue dans le VIP"); }
         else if (c === "OZB-PREMIUM-TEST") { S.tier = "premium"; S.trialEnds = null; save(); closeSheet(); render(); confetti(); toast("Premium activé"); }
         else toast("Code inconnu. Vérifie l'orthographe."); break;
@@ -2508,7 +2589,12 @@ textarea.inp{min-height:130px;padding:12px 14px;resize:vertical;font-size:15px}
     const t = e.target;
     if ((t.id === "imp-f" || t.id === "imp-cam") && t.files && t.files[0]) { const urls = []; for (const f of Array.from(t.files).slice(0, 8)) urls.push(await shrinkImage(f, 1200)); runOcr(urls, t.id === "imp-cam" || t.dataset.paper === "1"); }
     else if (t.id === "f-addcap-f" && t.files && t.files[0]) { readForm(); const urls = []; for (const f of Array.from(t.files).slice(0, 8)) urls.push(await shrinkImage(f, 1200)); addCapture(urls); }
-    else if (t.id === "av-f" && t.files && t.files[0]) { S.user.photo = await shrinkImage(t.files[0], 160); save(); closeSheet(); render(); toast("Photo mise à jour"); }
+    else if (t.id === "av-f" && t.files && t.files[0]) {
+      /* format illisible par le navigateur (ex. HEIC) : shrinkImage renvoie le fichier brut, qu'on ne garde pas */
+      const ph = await shrinkImage(t.files[0], 160);
+      if (!okPhoto(ph)) { t.value = ""; toast("Cette photo n'a pas pu être lue. Essaie une photo JPEG ou PNG."); }
+      else { S.user.photo = ph; save(); closeSheet(); render(); toast("Photo mise à jour"); }
+    }
   });
   document.addEventListener("keydown", (e) => {
     if (e.key === "Escape" && LAYER.innerHTML) closeSheet();
@@ -2519,6 +2605,7 @@ textarea.inp{min-height:130px;padding:12px 14px;resize:vertical;font-size:15px}
   if (S && S.vip) { vipCheck(false).then(loadVipFeed); }
   render();
   try {
+    if (/[?&]paiement=ok/.test(location.search) && S && S.onboard && S.onboard.done && !isPremium()) setTimeout(() => { sheet(sheetHead("Merci pour ton achat !") + '<p class="lead">Dernière étape : colle la <b>clé de licence</b> de ta commande Whop pour débloquer ton accès sur ce téléphone.</p><p class="hint">Whop › Commandes › OZB Bankroll › clé de licence (aussi dans l\'e-mail de confirmation).</p><button class="btn btn-primary block" data-act="code">Coller ma clé</button>'); }, 400);
     const q = new URLSearchParams(location.search), shared = [q.get("title"), q.get("text"), q.get("url")].filter(Boolean).join("\n");
     if (shared && S && S.onboard && S.onboard.done) {
       history.replaceState(null, "", location.pathname);

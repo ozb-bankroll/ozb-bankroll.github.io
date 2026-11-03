@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="robots" content="noindex">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; connect-src 'self' https://ozb-bankroll.netlify.app; img-src 'self' data:; base-uri 'none'; form-action 'none'">
 <title>OZB · Espace admin</title>
 <style>
 :root{--bg:#050b12;--s:#0e1b28;--s2:#132536;--l:#1f3649;--fg:#eaf2f6;--m:#8fa6b7;--a:#3fd0c9;--w:#5ad48a;--r:#f0897c}
@@ -62,7 +63,7 @@ $("refresh").onclick = list;
 $("create").onclick = async () => {
   try { const labels = $("labels").value.split("\n").map((s) => s.trim()).filter(Boolean); const n = Math.max(+$("n").value || 1, labels.length);
     const j = await api("create", { n, days: +$("days").value || 31, labels });
-    $("created").innerHTML = '<p class="m">À envoyer en privé, un code par membre :</p><textarea rows="' + Math.min(10, j.codes.length + 1) + '" readonly>' + j.codes.map((c, i) => (labels[i] ? labels[i] + " : " : "") + c).join("\n") + "</textarea>"; list();
+    $("created").innerHTML = '<p class="m">À envoyer en privé, un code par membre :</p><textarea rows="' + Math.min(10, j.codes.length + 1) + '" readonly>' + j.codes.map((c, i) => esc((labels[i] ? labels[i] + " : " : "") + c)).join("\n") + "</textarea>"; list();
   } catch (e) { msg(e.message); }
 };
 document.addEventListener("click", async (e) => {
