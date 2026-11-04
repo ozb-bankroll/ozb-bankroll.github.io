@@ -31,6 +31,8 @@ code{font-size:14px;color:var(--a)}.ok{color:var(--w)}.ko{color:var(--r)}.mut{co
 
 <div class="card"><div class="row" style="justify-content:space-between"><h2>Codes</h2><button class="s" id="refresh">Actualiser</button></div><div id="list" class="mut">…</div></div>
 
+<div class="card"><div class="row" style="justify-content:space-between"><h2>Chiffres de l'app (14 jours)</h2><button class="s" id="statsBtn">Actualiser</button></div><p class="m">Appareils uniques par jour, anonymes. Ajoute <code>?src=bio</code>, <code>?src=tiktok</code>… à tes liens pour savoir d'où viennent les gens.</p><div id="stats" class="mut">…</div></div>
+
 <div class="card"><h2>Tickets OZB du jour</h2><p class="m">Ce que voient les membres VIP dans l'app. « Publier » remplace la liste du jour.</p>
 <div id="tickets"></div><div class="row"><button class="s" id="add">+ Ticket</button><button id="publish">Publier</button><button class="d" id="clear">Vider</button></div></div>
 </div>
@@ -48,7 +50,7 @@ const esc = (s) => String(s == null ? "" : s).replace(/[&<>"']/g, (c) => ({ "&":
 const d = (t) => (t ? new Date(t).toLocaleDateString("fr-FR", { day: "numeric", month: "short" }) : "—");
 async function enter() {
   KEY = $("key").value.trim() || KEY;
-  try { await api("getFeed"); try { sessionStorage.setItem("ozb-admin", KEY); } catch (e) {} $("login").style.display = "none"; $("main").style.display = "block"; list(); loadFeed(); }
+  try { await api("getFeed"); try { sessionStorage.setItem("ozb-admin", KEY); } catch (e) {} $("login").style.display = "none"; $("main").style.display = "block"; list(); loadFeed(); loadStats(); }
   catch (e) { msg(e.message); }
 }
 async function list() {
@@ -60,6 +62,17 @@ const row = (t) => '<div class="tk"><input placeholder="Match (Lille – Lens)" 
 async function loadFeed() { try { const j = await api("getFeed"); $("tickets").innerHTML = (j.tickets && j.tickets.length ? j.tickets : [{}]).map(row).join(""); } catch (e) { msg(e.message); } }
 $("go").onclick = enter; $("key").onkeydown = (e) => { if (e.key === "Enter") enter(); };
 $("refresh").onclick = list;
+const EV = [["open", "Ouvertures"], ["onboard_done", "Inscriptions"], ["ticket_added", "Ajout de ticket"], ["premium_click", "Clic Premium"], ["premium_reserve", "Réservations 7,99 €"], ["install", "Installées"]];
+async function loadStats() {
+  try { const j = await api("stats"), days = j.days, tot = {}; days.forEach((d) => EV.forEach(([k]) => (tot[k] = (tot[k] || 0) + (d.n[k] || 0))));
+    const src = {}; days.forEach((d) => Object.entries(d.src || {}).forEach(([k, v]) => (src[k] = (src[k] || 0) + v)));
+    const pct = (a, b) => (b ? Math.round((a / b) * 100) + " %" : "—");
+    $("stats").innerHTML = '<table><tr><th>Jour</th>' + EV.map(([, l]) => "<th>" + l + "</th>").join("") + "</tr>" + days.filter((d) => Object.keys(d.n).length).map((d) => "<tr><td>" + esc(d.day.slice(5)) + "</td>" + EV.map(([k]) => "<td>" + (d.n[k] || 0) + "</td>").join("") + "</tr>").join("") + '<tr><th>Total</th>' + EV.map(([k]) => "<th>" + (tot[k] || 0) + "</th>").join("") + "</tr></table>" +
+      '<p class="m" style="margin-top:10px">Ouverture → inscription : <b>' + pct(tot.onboard_done, tot.open) + "</b> · inscription → 1er ticket : <b>" + pct(tot.ticket_added, tot.onboard_done) + "</b> · inscription → clic Premium : <b>" + pct(tot.premium_click, tot.onboard_done) + "</b> · réservations : <b>" + (tot.premium_reserve || 0) + "</b></p>" +
+      '<p class="m">Sources : ' + (Object.keys(src).length ? Object.entries(src).map(([k, v]) => esc(k) + " " + v).join(" · ") : "aucune encore (ajoute ?src=… à tes liens)") + "</p>";
+  } catch (e) { $("stats").textContent = e.message; }
+}
+$("statsBtn").onclick = loadStats;
 $("create").onclick = async () => {
   try { const labels = $("labels").value.split("\n").map((s) => s.trim()).filter(Boolean); const n = Math.max(+$("n").value || 1, labels.length);
     const j = await api("create", { n, days: +$("days").value || 31, labels });

@@ -1180,6 +1180,9 @@ textarea.inp{min-height:130px;padding:12px 14px;resize:vertical;font-size:15px}
     } catch (e) { return { ok: false, error: "Pas de connexion. Réessaie quand tu as du réseau." }; }
   }
   /* Paiement Whop : liens de paiement par formule (vides tant que les prix ne sont pas créés sur Whop) */
+  /* Mesure d'audience anonyme (aucun nom ni e-mail) : ouvertures, source, inscriptions, tickets, intérêt Premium */
+  const SRC = ((location.search.match(/[?&]src=([a-z]{2,12})/) || [])[1] || "");
+  function track(e) { try { fetch(API + "stat", { method: "POST", headers: { "content-type": "text/plain;charset=UTF-8" }, body: JSON.stringify({ e: e, d: DEVICE, s: SRC }), keepalive: true }).catch(() => {}); } catch (err) {} }
   /* Achat : le serveur crée la page Whop de CE téléphone ; au retour, l'accès s'active seul (pas de code) */
   function grant(d) { S.tier = d.tier === "vip" ? "vip" : "premium"; S.trialEnds = null; S.vip = { token: d.token, expires: d.expires, checked: Date.now(), src: "whop", manage: d.manage || "" }; save(); if (S.tier === "vip") loadVipFeed(); }
   async function startCheckout(plan) {
@@ -1873,6 +1876,7 @@ textarea.inp{min-height:130px;padding:12px 14px;resize:vertical;font-size:15px}
     const ob = UI.ob;
     S.user.name = ob.name.trim();
     S.onboard = { done: true, why: ob.why, sports: [], books: [], at: Date.now() };
+    track("onboard_done");
     S.start = ob.start; S.startDate = today();
     S.plan = { style: ob.style, ranges: JSON.parse(JSON.stringify(O.STYLES[ob.style].ranges)), dayCap: ob.dayCap };
     S.prefs = { remind: ob.remind, weekly: ob.weekly };
@@ -1909,7 +1913,7 @@ textarea.inp{min-height:130px;padding:12px 14px;resize:vertical;font-size:15px}
       "<h1>" + (sel === "vip" ? PW_TITLES.vip : PW_TITLES[from] || "Comprends <em>où part</em> ton argent.") + "</h1>" + pwIntro(sel) +
       '<div class="label">Choisis ta formule</div><div class="stack">' + plan("month", "Premium mensuel", "9,99 €<small>/mois</small>", (trialOk ? "7 jours gratuits · " : "") + "sans engagement", trialOk ? "Essai gratuit" : "") + plan("year", "Premium annuel", "79,99 €<small>/an</small>", "Soit 6,67 € par mois · sans essai", "−33 %") + plan("vip", "VIP OZB", "24,99 €<small>/mois</small>", "Premium + analyses OZB du jour · sans essai", "", "vipc") + "</div>" +
       table + tl +
-      '<div class="foot">' + cta + '<p class="legal">' + terms + '</p><p class="legal test">Version de test : ' + (sel === "vip" ? "le bouton ouvre la page OZB, aucun paiement dans l'app." : (sel === "year" || !trialOk ? "le paiement n'est pas encore branché, aucun montant n'est débité." : "l'essai est simulé sur ce téléphone, aucun moyen de paiement n'est demandé ni débité.")) + '</p><button class="btn btn-ghost block" data-act="close-pw">Rester en gratuit</button></div>';
+      '<div class="foot">' + cta + '<p class="legal">' + terms + '</p><p class="legal test">' + (PROD && sel !== "vip" ? "Tant que le paiement n'est pas ouvert, ce bouton réserve ton prix fondateur : aucun paiement aujourd'hui." : "Version de test : " + (sel === "vip" ? "le bouton ouvre la page OZB, aucun paiement dans l'app." : (sel === "year" || !trialOk ? "le paiement n'est pas encore branché, aucun montant n'est débité." : "l'essai est simulé sur ce téléphone, aucun moyen de paiement n'est demandé ni débité."))) + '</p><button class="btn btn-ghost block" data-act="close-pw">Rester en gratuit</button></div>';
   }
   /* Offre en 3 temps : les bénéfices, ce que tu débloques (ta propre analyse), puis les tarifs */
   function pwIntro(sel) {
@@ -1925,7 +1929,7 @@ textarea.inp{min-height:130px;padding:12px 14px;resize:vertical;font-size:15px}
       '<div class="label">Ce que tu débloques</div>' + prev +
       '<div class="stack">' + feat("🔍", "Analyse complète", "Tous tes constats, avec une piste d'action à chaque fois") + feat("📊", "Stats par catégorie", "Simples ou combinés, cotes, sports, bookmakers, respect du plan") + feat("🎚️", "Plan adaptatif", "Un cran au-dessus là où tes chiffres sont solides, retour automatique si ça se gâte") + feat("🗓️", "Période au choix", "30 derniers jours, 50 derniers tickets ou tes propres dates") + feat("📸", "Imports illimités", "Plusieurs captures pour les longs combinés, tickets papier") + feat("🧾", "Bilan du mois", "Ton mois en une image, à garder ou partager") + "</div>";
   }
-  function openPaywall(planSel, from) { UI.pwSel = planSel || (isPremium() && !isVip() ? "vip" : "month"); UI.pwFrom = from || ""; sheet(paywallHtml()); }
+  function openPaywall(planSel, from) { track("premium_click"); UI.pwSel = planSel || (isPremium() && !isVip() ? "vip" : "month"); UI.pwFrom = from || ""; sheet(paywallHtml()); }
   const safeManage = (u) => (/^https:\/\/whop\.com\//.test(String(u)) ? u : "https://whop.com/");
   function subSheet() {
     let h = sheetHead("Mon abonnement");
@@ -2222,7 +2226,7 @@ textarea.inp{min-height:130px;padding:12px 14px;resize:vertical;font-size:15px}
     } else {
       const t = { id: uid(), created: Date.now(), date: d.date, legs: legs, sport: d.sport, book: d.book, market: d.market, type: d.type, odds: r2(oddsN), stake: r2(stakeN), status: "open", payout: null, source: d.source, ozbId: d.ozbId || null, note: d.note, link: d.link || "", ref: d.ref || "" };
       t.league = d.league || ""; const adv = O.advice(S, t.type, null, t); t.maxPct = adv.high; if (adv.boost) t.planBoost = adv.boost.key;
-      t.basis = O.available(S); S.tickets.push(t);
+      t.basis = O.available(S); S.tickets.push(t); if (!S.demo) track("ticket_added");
       vibe(15); toast(O.inPlan(S, t) ? "Ticket ajouté · dans ton plan" : "Ticket ajouté");
     }
     save(); closeSheet(); render();
@@ -2435,6 +2439,7 @@ textarea.inp{min-height:130px;padding:12px 14px;resize:vertical;font-size:15px}
           el.disabled = true; const r = await startCheckout(UI.pwSel); el.disabled = false;
           /* paiement pas encore branché (serveur absent ou prix non créés) : on garde l'essai de test ci-dessous */
           if (r.ok || (r.status && ![404, 405, 501, 503].includes(r.status))) { if (!r.ok) toast(r.error || "Paiement indisponible pour l'instant."); break; }
+          if (PROD) { track("premium_reserve"); S.founderReserved = Date.now(); save(); sheet(sheetHead("C'est réservé") + '<p class="lead">Premium ouvre très bientôt. <b>Ton prix fondateur à 7,99 €/mois est gardé</b> sur ce téléphone (au lieu de 9,99 €).</p><p class="hint">Tu verras l\'offre ici dès l\'ouverture. En attendant, la version gratuite reste complète : plan de mise, bankroll, alertes.</p><button class="btn btn-primary block" data-act="close-pw">OK</button>'); break; }
         }
         if (S.trialUsed || UI.pwSel !== "month") { toast("Paiement pas encore branché dans cette version de test."); break; }
         S.tier = "premium"; S.trialEnds = Date.now() + 7 * 864e5; S.trialUsed = true; S.trialPlan = "month"; S.trialStarted = Date.now(); S.trialEndedNotice = false;
@@ -2612,7 +2617,7 @@ textarea.inp{min-height:130px;padding:12px 14px;resize:vertical;font-size:15px}
         else toast("Code inconnu. Vérifie l'orthographe."); break;
       }
       case "legal":
-        sheet(sheetHead("Conditions et confidentialité") + '<div class="prose"><p><b>Ce que fait l\'app.</b> OZB Bankroll t\'aide à suivre tes paris et ta bankroll. Ce n\'est pas un site de paris : l\'app ne prend aucun pari et ne touche pas à ton argent.</p><p><b>Aucune garantie de gain.</b> Les conseils de mise et les tickets OZB sont des aides à la décision. Les paris restent risqués.</p><p><b>18 ans et plus.</b> L\'app est réservée aux personnes majeures.</p><p><b>Tes données.</b> Sans compte, elles restent sur ton téléphone. Avec un compte, ton e-mail sert seulement à retrouver ton compte. Elles ne sont jamais vendues. Tu peux tout effacer depuis Profil.</p><p><b>Contact.</b> ozb.prono@gmail.com</p><p class="hint">Version provisoire, à faire valider avant la mise en ligne sur les stores.</p></div>'); break;
+        sheet(sheetHead("Conditions et confidentialité") + '<div class="prose"><p><b>Ce que fait l\'app.</b> OZB Bankroll t\'aide à suivre tes paris et ta bankroll. Ce n\'est pas un site de paris : l\'app ne prend aucun pari et ne touche pas à ton argent.</p><p><b>Aucune garantie de gain.</b> Les conseils de mise et les tickets OZB sont des aides à la décision. Les paris restent risqués.</p><p><b>18 ans et plus.</b> L\'app est réservée aux personnes majeures.</p><p><b>Tes données.</b> Sans compte, elles restent sur ton téléphone. Avec un compte, ton e-mail sert seulement à retrouver ton compte. Elles ne sont jamais vendues. Tu peux tout effacer depuis Profil.</p><p><b>Mesure d\'audience.</b> L\'app compte de façon anonyme les ouvertures, inscriptions, ajouts de tickets et clics sur l\'offre, pour savoir si elle est utile. Aucun nom, e-mail ni ticket n\'est envoyé.</p><p><b>Contact.</b> ozb.prono@gmail.com</p><p class="hint">Version provisoire, à faire valider avant la mise en ligne sur les stores.</p></div>'); break;
     }
   });
   document.addEventListener("input", (e) => {
@@ -2641,6 +2646,7 @@ textarea.inp{min-height:130px;padding:12px 14px;resize:vertical;font-size:15px}
   });
 
   window.__OZB_APP = { get S() { return S; }, UI, render };
+  track("open"); if (STANDALONE()) track("install");
   if (S && S.vip) { vipCheck(false).then(loadVipFeed); }
   render();
   try {
