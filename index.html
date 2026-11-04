@@ -1180,8 +1180,26 @@ textarea.inp{min-height:130px;padding:12px 14px;resize:vertical;font-size:15px}
     } catch (e) { return { ok: false, error: "Pas de connexion. Réessaie quand tu as du réseau." }; }
   }
   /* Paiement Whop : liens de paiement par formule (vides tant que les prix ne sont pas créés sur Whop) */
-  const CHECKOUT = { founder: "", month: "", year: "" };
-  const checkoutUrl = (sel) => (sel === "month" ? CHECKOUT.founder || CHECKOUT.month : CHECKOUT[sel]) || "";
+  /* Achat : le serveur crée la page Whop de CE téléphone ; au retour, l'accès s'active seul (pas de code) */
+  function grant(d) { S.tier = d.tier === "vip" ? "vip" : "premium"; S.trialEnds = null; S.vip = { token: d.token, expires: d.expires, checked: Date.now(), src: "whop", manage: d.manage || "" }; save(); if (S.tier === "vip") loadVipFeed(); }
+  async function startCheckout(plan) {
+    try { const r = await api("whop/checkout", { method: "POST", body: JSON.stringify({ plan: plan, device: DEVICE }) });
+      if (!r.ok) return { ok: false, status: r.status, error: r.data.error };
+      S.pendingClaim = { id: r.data.claim, at: Date.now() }; save(); location.href = r.data.url; return { ok: true };
+    } catch (e) { return { ok: false, error: "Pas de connexion. Réessaie quand tu as du réseau." }; }
+  }
+  let claimTries = 0;
+  async function claimCheck(fromUrl) {
+    const c = S && S.pendingClaim; if (!c || Date.now() - c.at > 3 * 864e5) return;
+    try { const r = await api("whop/claim", { method: "POST", body: JSON.stringify({ claim: c.id, device: DEVICE }) });
+      if (r.ok && r.data.token) { grant(r.data); S.pendingClaim = null; save(); closeSheet(); render(); confetti(S.tier === "vip" ? "gold" : undefined); toast(S.tier === "vip" ? "Bienvenue dans le VIP : tout est débloqué" : "Premium activé, merci !"); return; }
+      if (r.status === 202) { if (++claimTries < 15 && document.visibilityState === "visible") setTimeout(claimCheck, 4000); return; }
+      S.pendingClaim = null; save();
+      if (fromUrl && r.status === 403) sheet(sheetHead("Paiement reçu") + '<p class="lead">Merci ! Retourne dans <b>l\'app OZB</b> (l\'icône sur ton écran d\'accueil) : ton accès s\'active tout seul en l\'ouvrant.</p>');
+      else toast(r.data.error || "Activation impossible. Écris-nous si tu as payé.");
+    } catch (e) {}
+  }
+  document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible" && S && S.pendingClaim) { claimTries = 0; claimCheck(); } });
   async function whopActivate(key) {
     try { const r = await api("whop/activate", { method: "POST", body: JSON.stringify({ key: key, device: DEVICE }) });
       if (!r.ok) return { ok: false, error: r.data.error || "Activation impossible pour l'instant." };
@@ -1908,13 +1926,15 @@ textarea.inp{min-height:130px;padding:12px 14px;resize:vertical;font-size:15px}
       '<div class="stack">' + feat("🔍", "Analyse complète", "Tous tes constats, avec une piste d'action à chaque fois") + feat("📊", "Stats par catégorie", "Simples ou combinés, cotes, sports, bookmakers, respect du plan") + feat("🎚️", "Plan adaptatif", "Un cran au-dessus là où tes chiffres sont solides, retour automatique si ça se gâte") + feat("🗓️", "Période au choix", "30 derniers jours, 50 derniers tickets ou tes propres dates") + feat("📸", "Imports illimités", "Plusieurs captures pour les longs combinés, tickets papier") + feat("🧾", "Bilan du mois", "Ton mois en une image, à garder ou partager") + "</div>";
   }
   function openPaywall(planSel, from) { UI.pwSel = planSel || (isPremium() && !isVip() ? "vip" : "month"); UI.pwFrom = from || ""; sheet(paywallHtml()); }
+  const safeManage = (u) => (/^https:\/\/whop\.com\//.test(String(u)) ? u : "https://whop.com/");
   function subSheet() {
     let h = sheetHead("Mon abonnement");
     const end = S.trialEnds ? new Date(S.trialEnds).toLocaleDateString("fr-FR", { day: "numeric", month: "long" }) : "";
     if (isVip()) h += '<div class="card"><span class="tier vip">VIP</span><h2 style="margin-top:8px">VIP OZB actif</h2><p class="hint">Premium inclus. Les analyses OZB du jour s\'affichent sur l\'accueil.</p></div><button class="btn btn-soft block" data-act="sub-cancel">Résilier le VIP</button>';
     else if (isPremium() && S.trialEnds) h += '<div class="card"><span class="tier premium">Essai</span><h2 style="margin-top:8px">Essai Premium · ' + trialDays() + ' j restants</h2><p class="lead">Se termine le ' + end + ". Ensuite : " + PRICE[S.trialPlan || "month"] + ", sauf si tu annules avant.</p></div>" +
       '<button class="btn btn-soft block" data-act="sub-cancel">Annuler l\'essai</button><p class="legal test">Version de test : aucun paiement n\'est branché. À la fin de l\'essai, l\'app repasse en gratuit. En production, l\'abonnement démarrera sauf annulation.</p>';
-    else if (isPremium()) h += '<div class="card"><span class="tier premium">Premium</span><h2 style="margin-top:8px">Premium actif</h2><p class="hint">Imports illimités, analyse complète, stats par catégorie.</p></div><button class="btn btn-soft block" data-act="sub-cancel">Résilier</button>';
+    else if (isPremium()) h += '<div class="card"><span class="tier premium">Premium</span><h2 style="margin-top:8px">Premium actif</h2><p class="hint">Imports illimités, analyse complète, stats par catégorie.</p></div>' + (S.vip && S.vip.src === "whop" ? "" : '<button class="btn btn-soft block" data-act="sub-cancel">Résilier</button>');
+    if (S.vip && S.vip.src === "whop") h += '<button class="btn btn-soft block" data-act="pair-start">Ajouter un appareil (ordi, 2e téléphone)</button><p class="hint" style="text-align:center">Jusqu\'à 3 appareils par abonnement.</p>' + (S.vip.manage ? '<a class="btn btn-ghost block" href="' + esc(safeManage(S.vip.manage)) + '" target="_blank" rel="noopener">Gérer ou résilier sur Whop</a>' : "");
     else h += '<div class="card"><span class="tier free">Gratuit</span><h2 style="margin-top:8px">Version gratuite</h2><p class="hint">Suivi complet de ta bankroll, alertes, 10 imports par mois' + (isFinite(importsLeft()) ? " (" + importsLeft() + " restants)" : "") + " et 1 constat d'analyse.</p></div>" +
       (S.trialUsed ? "" : '<p class="lead">Premium mensuel : 7 jours gratuits, puis 9,99 €/mois. Ou l\'annuel à 79,99 €/an, sans essai.</p>');
     h += '<button class="btn btn-primary block" data-act="paywall">Comparer les offres</button>';
@@ -2411,11 +2431,23 @@ textarea.inp{min-height:130px;padding:12px 14px;resize:vertical;font-size:15px}
       case "pw-go":
         if (UI.pwSel === "vip") { window.open(VIP_URL, "_blank", "noopener"); toast("Ouverture de la page VIP OZB"); break; }
         if (isPremium()) break;
-        if (checkoutUrl(UI.pwSel)) { window.open(checkoutUrl(UI.pwSel), "_blank", "noopener"); toast("Paiement sécurisé sur Whop. Reviens ici ensuite avec ta clé."); break; }
+        if (UI.pwSel === "month" || UI.pwSel === "year") {
+          el.disabled = true; const r = await startCheckout(UI.pwSel); el.disabled = false;
+          /* paiement pas encore branché (serveur absent ou prix non créés) : on garde l'essai de test ci-dessous */
+          if (r.ok || (r.status && ![404, 405, 501, 503].includes(r.status))) { if (!r.ok) toast(r.error || "Paiement indisponible pour l'instant."); break; }
+        }
         if (S.trialUsed || UI.pwSel !== "month") { toast("Paiement pas encore branché dans cette version de test."); break; }
         S.tier = "premium"; S.trialEnds = Date.now() + 7 * 864e5; S.trialUsed = true; S.trialPlan = "month"; S.trialStarted = Date.now(); S.trialEndedNotice = false;
         save(); closeSheet(); render(); confetti(); toast("Essai activé jusqu'au " + new Date(S.trialEnds).toLocaleDateString("fr-FR", { day: "numeric", month: "long" }) + ", puis " + PRICE[S.trialPlan]); break;
       case "sub": subSheet(); break;
+      case "pair-start": {
+        el.disabled = true;
+        try { const r = await api("device/pair", { method: "POST", body: JSON.stringify({ action: "start", token: S.vip && S.vip.token, device: DEVICE }) });
+          if (!r.ok) { el.disabled = false; toast(r.data.error || "Impossible pour l'instant"); break; }
+          sheet(sheetHead("Ajouter un appareil") + '<p class="lead">Sur ton autre appareil, ouvre <b>ozb-bankroll.github.io</b>, puis Profil › J\'ai un code, et tape :</p><div class="mega num" style="text-align:center;letter-spacing:.12em;margin:14px 0">' + esc(r.data.code) + '</div><p class="hint" style="text-align:center">Valable 10 minutes. Jusqu\'à 3 appareils par abonnement.</p>');
+        } catch (e) { el.disabled = false; toast("Pas de connexion."); }
+        break;
+      }
       case "sub-cancel": {
         const wasTrial = !!S.trialEnds; S.tier = "free"; S.trialEnds = null; save(); closeSheet(); render();
         toast(wasTrial ? "Essai annulé. Aucun paiement ne sera demandé." : "Abonnement résilié (simulation)."); break;
@@ -2551,7 +2583,7 @@ textarea.inp{min-height:130px;padding:12px 14px;resize:vertical;font-size:15px}
         sheet(sheetHead("Inviter un ami") + '<p class="lead">Ton ami reçoit 7 jours de Premium. Toi aussi, à son inscription.</p><div class="card" style="text-align:center"><div class="label">Ton code</div><div class="mega" style="font-size:44px;color:var(--accent)">' + code + '</div></div><button class="btn btn-primary block" data-act="copy-text" data-v="Rejoins-moi sur OZB Bankroll avec mon code ' + code + ' : 7 jours de Premium offerts.">' + I("copy") + "Copier l'invitation</button>"); break;
       }
       case "copy-text": try { await navigator.clipboard.writeText(el.dataset.v); toast("Invitation copiée"); } catch (err) { toast(el.dataset.v); } break;
-      case "code": sheet(sheetHead("J'ai un code") + '<div class="field"><label class="label" for="cd">Ton code</label><input class="inp" id="cd" autocapitalize="characters" placeholder="VIP-XXXX-XXXX" autofocus></div><button class="btn btn-primary block" data-act="code-go">Valider</button><p class="hint">Membre du VIP OZB ? Ton code personnel (VIP-XXXX-XXXX) t\'est envoyé en privé.</p><p class="hint">Tu as payé sur Whop ? Colle la <b>clé de licence</b> de ta commande (Whop › Commandes › OZB Bankroll). Un code ou une clé ne marche que sur un seul téléphone.</p>'); break;
+      case "code": sheet(sheetHead("J'ai un code") + '<div class="field"><label class="label" for="cd">Ton code</label><input class="inp" id="cd" autocapitalize="characters" placeholder="VIP-XXXX-XXXX" autofocus></div><button class="btn btn-primary block" data-act="code-go">Valider</button><p class="hint">Membre du VIP OZB ? Ton code personnel (VIP-XXXX-XXXX) t\'est envoyé en privé.</p><p class="hint">Déjà abonné sur un autre appareil ? Tape le <b>code à 6 chiffres</b> affiché dans Profil › Mon abonnement › Ajouter un appareil.</p>'); break;
       case "code-go": {
         const c = (document.getElementById("cd").value || "").trim().toUpperCase().replace(/\s+/g, "");
         if (/^VIP-?[A-Z0-9]{4}-?[A-Z0-9]{4}$/.test(c)) {
@@ -2562,6 +2594,13 @@ textarea.inp{min-height:130px;padding:12px 14px;resize:vertical;font-size:15px}
         }
         if (PROD && /-TEST$/.test(c)) { toast("Code inconnu. Vérifie l'orthographe."); break; }
         const raw = (document.getElementById("cd").value || "").trim().replace(/\s+/g, "");
+        if (/^\d{6}$/.test(raw)) {
+          el.disabled = true; el.textContent = "Vérification…";
+          try { const r = await api("device/pair", { method: "POST", body: JSON.stringify({ code: raw, device: DEVICE }) });
+            if (r.ok) { grant(r.data); closeSheet(); render(); confetti(); toast("Appareil ajouté : ton abonnement est actif ici aussi"); } else { el.disabled = false; el.textContent = "Valider"; toast(r.data.error || "Code refusé"); }
+          } catch (e) { el.disabled = false; el.textContent = "Valider"; toast("Pas de connexion."); }
+          break;
+        }
         if (!/^OZB-/.test(c) && /^[A-Za-z0-9_-]{6,80}$/.test(raw)) {
           el.disabled = true; el.textContent = "Vérification…";
           const r = await whopActivate(raw);
@@ -2605,7 +2644,9 @@ textarea.inp{min-height:130px;padding:12px 14px;resize:vertical;font-size:15px}
   if (S && S.vip) { vipCheck(false).then(loadVipFeed); }
   render();
   try {
-    if (/[?&]paiement=ok/.test(location.search) && S && S.onboard && S.onboard.done && !isPremium()) setTimeout(() => { sheet(sheetHead("Merci pour ton achat !") + '<p class="lead">Dernière étape : colle la <b>clé de licence</b> de ta commande Whop pour débloquer ton accès sur ce téléphone.</p><p class="hint">Whop › Commandes › OZB Bankroll › clé de licence (aussi dans l\'e-mail de confirmation).</p><button class="btn btn-primary block" data-act="code">Coller ma clé</button>'); }, 400);
+    { const qc = (location.search.match(/[?&]claim=([\w-]{10,40})/) || [])[1];
+      if (qc && S && S.onboard && S.onboard.done) { if (!S.pendingClaim || S.pendingClaim.id !== qc) S.pendingClaim = { id: qc, at: Date.now() }; save(); history.replaceState(null, "", location.pathname); setTimeout(() => claimCheck(true), 300); }
+      else if (S && S.pendingClaim) setTimeout(claimCheck, 600); }
     const q = new URLSearchParams(location.search), shared = [q.get("title"), q.get("text"), q.get("url")].filter(Boolean).join("\n");
     if (shared && S && S.onboard && S.onboard.done) {
       history.replaceState(null, "", location.pathname);
