@@ -484,6 +484,11 @@ textarea.inp{min-height:130px;padding:12px 14px;resize:vertical;font-size:15px}
   .grab{display:none}
 }
 
+/* Pas de zoom involontaire sur iPhone : double tap désactivé, champs à 16 px minimum (iOS zoome en dessous) */
+html{touch-action:manipulation;-webkit-text-size-adjust:100%}
+button,a,[data-act]{touch-action:manipulation}
+@supports (-webkit-touch-callout:none){textarea.inp,select,.inp:not(.big){font-size:16px}}
+
 </style>
 </head>
 <body>
@@ -800,6 +805,8 @@ textarea.inp{min-height:130px;padding:12px 14px;resize:vertical;font-size:15px}
         if ((dim === "market" || dim === "book") && g.key === "Autre") return;
         const kind = g.profit < 0 ? "loss" : "gain";
         if (kind === "gain" && g.roi < 5) return;
+        /* « tes tickets dans ton plan sont rentables » n'apprend rien : seul le hors-plan qui coûte est un constat utile */
+        if (dim === "plan" && (kind === "gain" || g.key === "Dans le plan")) return;
         const nm = groupName(dim, g.key);
         let title;
         if (kind === "loss" && g.lossShare >= 50 && groups.filter((x) => x.profit < 0).length > 1) title = nm + " représentent " + g.lossShare + " % de tes pertes " + PL + ".";
@@ -927,8 +934,15 @@ textarea.inp{min-height:130px;padding:12px 14px;resize:vertical;font-size:15px}
       sel = sel.replace(/https?:\/\/\S+/g, "").replace(/[\s:!]+$/, "").replace(/^["«“\s]+|["»”\s]+$/g, "").trim();
       if (sel && sel.length <= 160 && !/^(mise|gain|cote|j'ai pari)/i.test(sel)) {
         const more = /(?:\.\.\.|…)\s*$/.test(sel); sel = sel.replace(/,?\s*(?:\.\.\.|…)\s*$/, "");
-        const parts = /^"|,/.test(share[1]) || /^\s*["«“]/.test(share[1]) ? sel.split(/\s*,\s*/).filter(Boolean) : [sel];
-        parts.forEach((x) => out.legs.push({ match: "", pick: x }));
+        /* format avec cotes : « "Côme" @1,63 » ou « "Lille" @2,10, "Lens" @1,80 » : la virgule décimale ne sépare pas les sélections */
+        const withOdds = [...share[1].matchAll(/["«“]?\s*([^"«“»”@\n]+?)\s*["»”]?\s*@\s*(\d+(?:[.,]\d+)?)/g)];
+        if (withOdds.length) {
+          withOdds.forEach((m) => { out.legs.push({ match: "", pick: m[1].replace(/^[,\s]+|[,\s]+$/g, "") }); out._lo = (out._lo || []).concat([num(m[2])]); });
+          out._so = r2(withOdds.reduce((acc, m) => acc * num(m[2]), 1));
+        } else {
+          const parts = /^"|,/.test(share[1]) || /^\s*["«“]/.test(share[1]) ? sel.split(/\s*,\s*/).filter(Boolean) : [sel];
+          parts.forEach((x) => out.legs.push({ match: "", pick: x.replace(/^["«“\s]+|["»”\s]+$/g, "") }));
+        }
         out.shared = true; if (more) out.truncated = true;
       }
     }
@@ -940,14 +954,17 @@ textarea.inp{min-height:130px;padding:12px 14px;resize:vertical;font-size:15px}
     else if (out.legs.length === 1 && lo[0]) out.odds = lo[0];
     else if (out.legs.length > 1 && lo.length === out.legs.length && lo.every(Boolean)) out.odds = r2(lo.reduce((a, b) => a * b, 1));
     else if (out.stake && out.payout && out.payout > out.stake) { out.odds = r2(out.payout / out.stake); out.oddsGuess = true; }
+    if (out._so) out.odds = out._so;
+    delete out._so;
     if (!out.stake && out.payout && out.odds) out.stake = r2(out.payout / out.odds);
     if (out.odds && out.stake && out.payout && !out.oddsGuess && Math.abs(out.odds * out.stake - out.payout) > Math.max(0.03, out.payout * 0.04)) out.oddsCheck = true;
-    if (/tennis|atp|wta|roland|wimbledon/i.test(T)) out.sport = "tennis";
+    if (/tennis|atp|wta|roland|wimbledon|\bjeux\b|\bset\b|tie-?break|\bace?s\b|double faute/i.test(T)) out.sport = "tennis";
     else if (/basket|nba|euroleague/i.test(T)) out.sport = "basket";
     else if (/rugby|top 14/i.test(T)) out.sport = "rugby";
     else if (/hockey|nhl/i.test(T)) out.sport = "hockey";
     else if (out.legs.length || /ligue 1|premier league|liga|serie a|bundesliga|champions|but|buteur/i.test(T)) out.sport = "foot";
-    if (/buteur/i.test(T)) out.market = "Buteur";
+    if (out.sport === "tennis" && /jeux|set|tie-?break/i.test(T)) out.market = "Jeux / sets";
+    else if (/buteur/i.test(T)) out.market = "Buteur";
     else if (/plus de|moins de|over|under|nombre (?:total )?de buts|\+\s?\d[.,]5/i.test(T)) out.market = "Plus/moins";
     else if (/les (?:deux|2) équipes|btts/i.test(T)) out.market = "Les 2 marquent";
     else if (/handicap|[ée]cart de buts|gagne (?:de|par) \d+ buts?/i.test(T)) out.market = "Handicap";
@@ -1827,6 +1844,27 @@ function infoContent(k) {
 function infoSheet(k) {
   const c = infoContent(k);
   if (!c) return;
+  /* une explication ouverte depuis une fenêtre (offre, ajout de ticket…) s'affiche par-dessus :
+     la fermer ramène exactement où on était, sans perdre ce qui était rempli */
+  if (LAYER.querySelector(".sheet")) {
+    const old = LAYER.querySelector(".info-pop");
+    if (old) old.remove();
+    LAYER.insertAdjacentHTML(
+      "beforeend",
+      '<div class="sheet-wrap info-pop" data-act="info-bg"><div class="sheet" role="dialog" aria-modal="true"><div class="grab" aria-hidden="true"></div><div class="sheet-h"><h2>' +
+        c[0] +
+        '</h2><button class="icon-btn" data-act="info-close" aria-label="Fermer">' +
+        I("x") +
+        '</button></div><div class="info-b"><p class="lead" style="color:var(--fg)">' +
+        esc(c[1]) +
+        '</p><div class="info-r"><span class="label">Comment c\'est calculé</span><p>' +
+        esc(c[2]) +
+        '</p></div><div class="info-r ex"><span class="label">Exemple</span><p>' +
+        esc(c[3]) +
+        '</p></div></div><button class="btn btn-soft block" data-act="info-close">Compris</button></div></div>'
+    );
+    return;
+  }
   sheet(
     sheetHead(c[0]) +
       '<div class="info-b"><p class="lead" style="color:var(--fg)">' +
@@ -1963,6 +2001,8 @@ function toast(msg) {
 }
 function sheet(html) {
   clearTimeout(refreshFormLive.t); // une nouvelle feuille remplace le formulaire : plus de redessin différé
+  const pop = LAYER.querySelector(".info-pop");
+  if (pop) pop.remove();
   const ex = LAYER.querySelector(".sheet");
   if (ex) {
     const sc = ex.scrollTop;
@@ -2101,7 +2141,7 @@ function topBar(title) {
 }
 const demoBand = () =>
   S.demo
-    ? '<div class="demo-band"><span>Données d\'exemple</span><button data-act="demo-off">Partir de ma vraie bankroll</button></div>'
+    ? '<div class="demo-band"><span>Données d\'exemple</span><button data-act="demo-off">Quitter l\'exemple</button></div>'
     : "";
 const vipEndBand = () =>
   S.vipEnded
@@ -2129,7 +2169,7 @@ const trialBand = () => {
     " (" +
     new Date(S.trialEnds).toLocaleDateString("fr-FR", { day: "numeric", month: "long" }) +
     "). Ensuite : " +
-    (S.trialPlan === "month" ? "9,99 €/mois" : "79,99 €/an") +
+    (S.trialPlan === "month" ? "7,99 €/mois" : "79,99 €/an") +
     '.</span><button class="link" data-act="sub">Gérer</button></div>'
   );
 };
@@ -2198,7 +2238,7 @@ function homeView() {
   let h = topBar("Salut") + demoBand() + vipEndBand() + trialBand() + pauseBand() + installBand();
   if (!S.tickets.length) return h + firstRunView(bk);
   h +=
-    '<section class="tilt-wrap"><div class="hero' +
+    '<section class="tilt-wrap" data-act="tab" data-tab="stats" style="cursor:pointer" aria-label="Voir mes stats"><div class="hero' +
     (neg ? " neg" : "") +
     '" data-tilt><div class="sheen"></div>' +
     '<div class="between z2"><span class="label">Ce mois-ci · ' +
@@ -2207,10 +2247,10 @@ function homeView() {
     ib("month", "ce mois-ci") +
     '</span><span class="pill ' +
     (neg ? "loss" : "win") +
-    '">' +
+    '" title="Gain ou perte du mois par rapport à ta bankroll du 1er du mois">' +
     (m.pctOfStart >= 0 ? "+" : "−") +
     frNum(Math.abs(m.pctOfStart)) +
-    " %</span></div>" +
+    " % de ta bankroll</span></div>" +
     '<div class="mega z ' +
     (neg ? "down" : m.profit > 0 ? "up" : "") +
     '" id="hero-n" data-v="' +
@@ -2346,24 +2386,29 @@ function analysisHero(o, compact) {
     (compact ? ' data-act="tab" data-tab="stats" style="cursor:pointer"' : "") +
     '><div class="between"><h3>Ton analyse personnelle</h3>';
   if (!loss && !gain) {
+    /* pas encore assez de tickets : on montre la forme de l'analyse, floutée, et combien il en manque */
+    if (compact) return "";
+    const need = Math.max(1, 10 - a.n);
     h +=
-      '<span class="pill fict">Exemple fictif</span></div>' +
+      "</div>" +
+      '<div class="locked mini" style="min-height:190px"><div class="blur">' +
       anSection("loss", EXAMPLE.loss) +
       anSection("gain", EXAMPLE.gain) +
-      '<div class="an-s"><b>💡 Ce que tu peux en retenir</b><p>' +
-      EXAMPLE.retain +
-      "</p></div>" +
-      '<p class="caveat">' +
+      '</div><div class="lock">' +
+      I("chart", 20) +
+      "<b>" +
       (a.n < 10
-        ? "Ta vraie analyse arrive avec tes tickets : encore " +
-          Math.max(1, 10 - a.n) +
+        ? "Ton analyse s'affiche à partir de 10 tickets réglés"
+        : "Pas encore d'écart assez net " + esc(a.periodLabel)) +
+      '</b><span class="hint">' +
+      (a.n < 10
+        ? "Encore " +
+          need +
           " ticket" +
-          (10 - a.n > 1 ? "s" : "") +
-          " réglé" +
-          (10 - a.n > 1 ? "s" : "") +
-          " pour une analyse fiable."
-        : "Aucun écart assez net " + esc(a.periodLabel) + " : il faut au moins 5 tickets dans une catégorie.") +
-      " Exemple illustratif, pas une prédiction ni une recommandation de mise.</p></section>";
+          (need > 1 ? "s" : "") +
+          " : tu verras ce qui te coûte le plus et ce qui te rapporte."
+        : "Il faut au moins 5 tickets dans une même catégorie.") +
+      "</span></div></div></section>";
     return h;
   }
   h +=
@@ -2412,8 +2457,25 @@ function analysisHero(o, compact) {
     "</section>";
   return h;
 }
+/* Accueil : une seule ligne quand un vrai constat existe (le détail est dans Stats) */
 function insightCard() {
-  return analysisHero({ period: "30d" }, true);
+  const a = O.analysis(S, { period: "30d" }),
+    f = a.findings.find((x) => x.kind === "loss") || a.findings[0];
+  if (!f) return "";
+  return (
+    '<button class="card tight" data-act="tab" data-tab="stats" style="display:flex;align-items:center;gap:12px;text-align:left;width:100%"><span class="insight"><span class="ic">' +
+    I("chart", 18) +
+    '</span><span style="flex:1;min-width:0"><b>' +
+    (f.kind === "loss" ? "Ce qui te coûte le plus" : "Ce qui marche le mieux") +
+    '</b><span class="hint" style="display:block">' +
+    esc(f.name) +
+    " · " +
+    (f.profit >= 0 ? "+" : "−") +
+    esc(eur(Math.abs(f.profit))) +
+    " sur 30 jours</span></span></span>" +
+    I("chevR") +
+    "</button>"
+  );
 }
 /* Tickets VIP : publiés depuis l'espace admin, servis par le serveur uniquement aux codes VIP valides (/api/vip/feed).
      Sans abonnement VIP : 2 exemples floutés, marqués « Exemple ». */
@@ -2621,7 +2683,7 @@ function adaptCards() {
     O.STYLES[c.next].label +
     ". Le reste de ton plan ne change pas.</p>" +
     (freeTry
-      ? '<p class="hint" style="margin-top:6px">🎁 Essai gratuit : 1 catégorie offerte. Les suivantes avec Premium (9,99 €/mois).</p>'
+      ? '<p class="hint" style="margin-top:6px">🎁 Essai gratuit : 1 catégorie offerte. Les suivantes avec Premium (7,99 €/mois).</p>'
       : "") +
     '<p class="caveat">Basé sur tes résultats passés, ça ne prédit pas l\'avenir. Plafonds gardés : 10 % max par ticket, 20 % max engagés par jour.</p></div></div>';
   if (!isPremium() && !freeTry)
@@ -3063,7 +3125,7 @@ function statsView() {
       card +
       '</div><div class="lock">' +
       I("lock", 24) +
-      '<b>Tes résultats par catégorie</b><span class="hint">Simples, cotes, sports, bookmakers, plan…</span><button class="btn btn-primary btn-sm" data-act="paywall" data-from="stats">Essayer Premium 7 jours</button><span class="hint">puis 9,99 €/mois, sans engagement</span></div></section>';
+      '<b>Tes résultats par catégorie</b><span class="hint">Simples, cotes, sports, bookmakers, plan…</span><button class="btn btn-primary btn-sm" data-act="paywall" data-from="stats">Essayer Premium 7 jours</button><span class="hint">puis 7,99 €/mois, sans engagement</span></div></section>';
   h += adaptSection();
   if (month) {
     h +=
@@ -3357,7 +3419,7 @@ function profileView() {
       '</b><span class="hint" style="display:block">' +
       (isPremium()
         ? "Le service d'analyses OZB, en plus de Premium"
-        : "7 jours gratuits, puis 9,99 €/mois · imports illimités, analyse complète") +
+        : "7 jours gratuits, puis 7,99 €/mois · imports illimités, analyse complète") +
       "</span></span>" +
       I("chevR") +
       "</button>";
@@ -3682,8 +3744,8 @@ function renderOnboarding() {
       '<div class="label">Tes rappels</div><div class="notif"><span class="nl">OZB</span><span style="flex:1;min-width:0"><b>Ticket à régler</b><span class="hint" style="display:block">Lens – Lille attend son résultat. Gagné ou perdu ?</span></span></div>' +
       '<div class="notif" style="opacity:.7"><span class="nl">OZB</span><span style="flex:1;min-width:0"><b>Ton bilan du dimanche</b><span class="hint" style="display:block">Ta semaine est prête : solde, série, discipline.</span></span></div><p class="hint">Aperçu : les notifications arrivent avec l\'app installée. Pas de spam.</p>' +
       '<div class="card">' +
-      sw("remind", "Régler mes tickets", "Le soir, si un ticket attend son résultat") +
-      sw("weekly", "Mon bilan du dimanche", "Ton solde et ta série de la semaine") +
+      sw("remind", "Régler mes tickets", "Rappel dans l'app quand un ticket attend son résultat") +
+      sw("weekly", "Mon bilan du dimanche", "Ton solde et ta série de la semaine, dans l’app") +
       "</div>";
   } else if (step === "build") {
     h =
@@ -3789,7 +3851,7 @@ function finishOnboarding() {
 }
 
 /* ---------- offres ---------- */
-const PRICE = { month: "9,99 €/mois", year: "79,99 €/an", vip: "24,99 €/mois" };
+const PRICE = { month: "7,99 €/mois", year: "79,99 €/an", vip: "24,99 €/mois" };
 const PW_TITLES = {
   analysis: "Vois <em>tous</em> tes constats.",
   stats: "Tes résultats <em>par catégorie</em>.",
@@ -3859,7 +3921,7 @@ function paywallHtml() {
     terms =
       "Le VIP OZB est un service éditorial distinct de l'app : les analyses de l'équipe OZB, publiées chaque jour dans l'app et dans le groupe Telegram VIP, pré-remplies avec ta mise selon ton plan. Premium est inclus. Pas d'essai gratuit. 24,99 € par mois, renouvelé automatiquement, résiliable à tout moment. Aucun résultat garanti : les paris restent risqués.";
   } else {
-    /* essai de 7 jours : uniquement sur Premium mensuel (9,99 €/mois) ; annuel et VIP sans essai */
+    /* essai de 7 jours : uniquement sur Premium mensuel (7,99 €/mois) ; annuel et VIP sans essai */
     const price = PRICE[sel],
       trialHere = trialOk && sel === "month";
     if (active)
@@ -3899,7 +3961,7 @@ function paywallHtml() {
       sel === "year"
         ? "79,99 € par an (6,67 € par mois), payés à l'inscription, renouvelé automatiquement chaque année jusqu'à résiliation. Annulation à tout moment depuis Profil › Mon abonnement. Pas d'essai gratuit sur l'annuel : pour essayer d'abord, choisis le mensuel."
         : (trialHere ? "7 jours gratuits, puis " : "") +
-          "9,99 € par mois, renouvelé automatiquement jusqu'à résiliation. Annulation à tout moment depuis Profil › Mon abonnement" +
+          "7,99 € par mois (prix fondateur, gardé tant que tu restes abonné), renouvelé automatiquement jusqu'à résiliation. Annulation à tout moment depuis Profil › Mon abonnement" +
           (trialHere ? " ; avant la fin de l'essai, tu ne paies rien. Un essai par personne." : ".");
   }
   return (
@@ -3916,11 +3978,11 @@ function paywallHtml() {
     plan(
       "month",
       "Premium mensuel",
-      "9,99 €<small>/mois</small>",
-      (trialOk ? "7 jours gratuits · " : "") + "sans engagement",
+      "7,99 €<small>/mois</small>",
+      "Prix fondateur (100 places, au lieu de 9,99 €) · " + (trialOk ? "7 jours gratuits · " : "") + "sans engagement",
       trialOk ? "Essai gratuit" : ""
     ) +
-    plan("year", "Premium annuel", "79,99 €<small>/an</small>", "Soit 6,67 € par mois · sans essai", "−33 %") +
+    plan("year", "Premium annuel", "79,99 €<small>/an</small>", "Soit 6,67 € par mois · sans essai", "−17 %") +
     plan("vip", "VIP OZB", "24,99 €<small>/mois</small>", "Premium + analyses OZB du jour · sans essai", "", "vipc") +
     "</div>" +
     table +
@@ -4068,7 +4130,7 @@ function subSheet() {
       " et 1 constat d'analyse.</p></div>" +
       (S.trialUsed
         ? ""
-        : '<p class="lead">Premium mensuel : 7 jours gratuits, puis 9,99 €/mois. Ou l\'annuel à 79,99 €/an, sans essai.</p>');
+        : '<p class="lead">Premium mensuel : 7 jours gratuits, puis 7,99 €/mois. Ou l\'annuel à 79,99 €/an, sans essai.</p>');
   h += '<button class="btn btn-primary block" data-act="paywall">Comparer les offres</button>';
   sheet(h);
 }
@@ -4091,7 +4153,7 @@ function valueOffer() {
           (a.findings.length > 2 ? "s" : "") +
           " avec Premium.</p>"
         : "") +
-      '<button class="btn btn-primary block" data-act="paywall" data-from="value">Essayer Premium 7 jours gratuits</button><p class="legal">Sur le mensuel : 7 jours gratuits, puis 9,99 €/mois. Annulable avant la fin de l\'essai sans rien payer.</p><button class="btn btn-ghost block" data-act="close">Plus tard</button>'
+      '<button class="btn btn-primary block" data-act="paywall" data-from="value">Essayer Premium 7 jours gratuits</button><p class="legal">Sur le mensuel : 7 jours gratuits, puis 7,99 €/mois. Annulable avant la fin de l\'essai sans rien payer.</p><button class="btn btn-ghost block" data-act="close">Plus tard</button>'
   );
 }
 
@@ -4159,12 +4221,13 @@ function newDraft(src, extra) {
     extra || {}
   );
 }
-function useImport() {
-  if (!isPremium()) {
-    importsUsed();
-    S.imports.n++;
-    save();
-  }
+/* Un import n'est décompté qu'au moment où le ticket est enregistré (pas à chaque lecture, nouvel essai ou capture ajoutée) */
+function useImport() {}
+function countImport(d) {
+  if (isPremium() || S.demo || !d || d.id) return;
+  if (!["import", "scan", "paste", "share"].includes(d.source)) return;
+  importsUsed();
+  S.imports.n++;
 }
 function needImport() {
   if (importsLeft() <= 0) {
@@ -4601,6 +4664,26 @@ function openForm(focus) {
     ad = O.advice(S, d.type, d.id, ctx);
   const oddsN = num(d.odds),
     stakeN = num(d.stake);
+  /* sport : deviné à la lecture du ticket, modifiable ; indispensable pour les analyses par sport */
+  const sportChips = ["foot", "tennis", "basket", "rugby", "hockey", "autre"]
+    .map(
+      (v) =>
+        '<button class="chip" data-act="f-sport" data-v="' +
+        v +
+        '" aria-pressed="' +
+        ((d.sport || "foot") === v) +
+        '">' +
+        {
+          foot: "⚽ Foot",
+          tennis: "🎾 Tennis",
+          basket: "🏀 Basket",
+          rugby: "🏉 Rugby",
+          hockey: "🏒 Hockey",
+          autre: "🎯 Autre"
+        }[v] +
+        "</button>"
+    )
+    .join("");
   const typeChips = TYPES.map(
     ([v, l]) =>
       '<button class="chip" data-act="f-type" data-v="' +
@@ -4791,6 +4874,9 @@ function openForm(focus) {
             : "Ajouter une capture (suite du combiné)") +
           '</label><input id="f-addcap-f" type="file" accept="image/*" multiple class="sr">'
         : "") +
+      '<div class="field"><span class="label">Sport</span><div class="chips">' +
+      sportChips +
+      "</div></div>" +
       '<div class="field"><span class="label">Type de ticket ' +
       ib("types", "types de ticket") +
       '</span><div class="chips">' +
@@ -4950,6 +5036,7 @@ function saveDraft() {
     if (adv.boost) t.planBoost = adv.boost.key;
     t.basis = O.available(S);
     S.tickets.push(t);
+    countImport(d);
     if (!S.demo) track("ticket_added");
     vibe(15);
     toast(O.inPlan(S, t) ? "Ticket ajouté · dans ton plan" : "Ticket ajouté");
@@ -5317,6 +5404,23 @@ function exportCsv() {
 }
 
 /* ---------- démo ---------- */
+/* Avant d'afficher l'exemple, on met de côté le vrai compte : quitter l'exemple y ramène, sans rien perdre */
+const DEMO_BACKUP = KEY + "-avant-exemple";
+function enterDemo() {
+  if (S && S.demo) return;
+  try {
+    localStorage.setItem(DEMO_BACKUP, S && S.user && S.onboard && S.onboard.done ? JSON.stringify(S) : "aucun");
+  } catch (e) {}
+}
+function demoBackup() {
+  try {
+    const b = localStorage.getItem(DEMO_BACKUP);
+    if (!b || b === "aucun") return null;
+    return cleanState(JSON.parse(b));
+  } catch (e) {
+    return null;
+  }
+}
 function demoData() {
   const keepUser = S.user;
   S = O.newState({ start: 400 });
@@ -5474,6 +5578,13 @@ document.addEventListener("click", async (e) => {
     id = el.dataset.id;
   if (act === "sheet-bg") {
     if (e.target === el) closeSheet();
+    return;
+  }
+  if (act === "info-bg" || act === "info-close") {
+    if (act === "info-close" || e.target === el) {
+      const pop = LAYER.querySelector(".info-pop");
+      if (pop) pop.remove();
+    }
     return;
   }
   if (el.tagName === "A") e.preventDefault();
@@ -5636,6 +5747,7 @@ document.addEventListener("click", async (e) => {
       break;
     case "demo-start":
       closeSheet();
+      enterDemo();
       S = O.newState({});
       S.user = { name: "Alex", color: AV_COLORS[0], mode: "local" };
       demoData();
@@ -5874,6 +5986,11 @@ document.addEventListener("click", async (e) => {
       openForm(firstMissing(UI.draft));
       break;
     }
+    case "f-sport":
+      readForm();
+      UI.draft.sport = el.dataset.v;
+      openForm();
+      break;
     case "f-type":
       readForm();
       UI.draft.type = el.dataset.v;
@@ -5928,6 +6045,21 @@ document.addEventListener("click", async (e) => {
       break;
     case "f-save":
       saveDraft();
+      /* tickets importés l'un après l'autre : on enchaîne sur la capture suivante */
+      if (UI.importQueue && UI.importQueue.length && !LAYER.querySelector(".sheet")) {
+        const nx = UI.importQueue.shift();
+        setTimeout(() => runOcr([nx], UI.pickPaper), 350);
+      }
+      break;
+    case "imp-one":
+      UI.importQueue = [];
+      runOcr(UI.pickUrls || [], UI.pickPaper);
+      break;
+    case "imp-many":
+      UI.importQueue = (UI.pickUrls || []).slice(1);
+      runOcr([(UI.pickUrls || [])[0]], UI.pickPaper);
+      if (UI.importQueue.length)
+        toast("Ticket 1 sur " + (UI.importQueue.length + 1) + " : enregistre-le, le suivant arrive tout seul");
       break;
     case "vip-play": {
       const f = vipFeed().find((x) => x.id === id);
@@ -6200,9 +6332,9 @@ document.addEventListener("click", async (e) => {
       sheet(
         sheetHead("Rappels") +
           '<div class="card">' +
-          sw("remind", "Régler mes tickets", "Le soir, si un ticket attend son résultat") +
-          sw("weekly", "Mon bilan du dimanche", "Ton solde et ta série de la semaine") +
-          '</div><p class="hint">Les notifications arrivent avec l\'app installée sur ton téléphone.</p>'
+          sw("remind", "Régler mes tickets", "Rappel dans l'app quand un ticket attend son résultat") +
+          sw("weekly", "Mon bilan du dimanche", "Ton solde et ta série de la semaine, dans l’app") +
+          '</div><p class="hint">Pour l’instant, les rappels s’affichent dans l’app quand tu l’ouvres. Les notifications sur l’écran verrouillé arrivent dans une prochaine version.</p>'
       );
       break;
     }
@@ -6304,17 +6436,44 @@ document.addEventListener("click", async (e) => {
     }
     case "demo":
       closeSheet();
+      enterDemo();
       demoData();
       UI.tab = "home";
       render();
       toast("Données d'exemple chargées");
       break;
-    case "demo-off":
+    case "demo-off": {
+      const back = demoBackup();
       sheet(
-        sheetHead("Ta vraie bankroll") +
-          '<p class="lead">On efface les données d\'exemple et tu repars avec ta bankroll.</p><div class="money"><label class="sr" for="real-b">Ta bankroll</label><input class="inp big" id="real-b" inputmode="decimal" placeholder="200" autofocus></div><button class="btn btn-primary block" data-act="demo-off-go">Commencer</button>'
+        sheetHead("Quitter l'exemple") +
+          (back
+            ? '<p class="lead">Tu retrouves ton compte et tes tickets, exactement comme avant l\'exemple.</p><button class="btn btn-primary block" data-act="demo-back">Revenir à mon compte</button>'
+            : '<p class="lead">Tu reviens à l\'écran de départ pour créer ton compte, ou tu pars directement de ta bankroll.</p><button class="btn btn-primary block" data-act="demo-back">Revenir au début</button><div class="money" style="margin-top:6px"><label class="label" for="real-b">Ou démarre direct avec ta bankroll</label><input class="inp big" id="real-b" inputmode="decimal" placeholder="200"></div><button class="btn btn-soft block" data-act="demo-off-go">Démarrer avec ce montant</button>')
       );
       break;
+    }
+    case "demo-back": {
+      const back = demoBackup();
+      try {
+        localStorage.removeItem(DEMO_BACKUP);
+      } catch (e) {}
+      closeSheet();
+      if (back) {
+        S = back;
+        save();
+        UI.tab = "home";
+        render();
+        toast("Retour à ton compte");
+      } else {
+        S = null;
+        try {
+          localStorage.removeItem(KEY);
+        } catch (e) {}
+        UI.tab = "home";
+        render();
+      }
+      break;
+    }
     case "demo-off-go": {
       const v = num(document.getElementById("real-b").value);
       if (!(v > 0)) {
@@ -6521,7 +6680,18 @@ document.addEventListener("change", async (e) => {
   if ((t.id === "imp-f" || t.id === "imp-cam") && t.files && t.files[0]) {
     const urls = [];
     for (const f of Array.from(t.files).slice(0, 8)) urls.push(await shrinkImage(f, 1200));
-    runOcr(urls, t.id === "imp-cam" || t.dataset.paper === "1");
+    const paper = t.id === "imp-cam" || t.dataset.paper === "1";
+    /* plusieurs captures d'un coup : un seul long ticket, ou plusieurs tickets à enregistrer l'un après l'autre */
+    if (urls.length > 1) {
+      UI.pickUrls = urls;
+      UI.pickPaper = paper;
+      sheet(
+        sheetHead(urls.length + " captures") +
+          '<p class="lead">Ces captures, c\'est…</p><button class="btn btn-primary block" data-act="imp-one">Un seul ticket (combiné trop long pour 1 capture)</button><button class="btn btn-soft block" data-act="imp-many">' +
+          urls.length +
+          " tickets différents</button>"
+      );
+    } else runOcr(urls, paper);
   } else if (t.id === "f-addcap-f" && t.files && t.files[0]) {
     readForm();
     const urls = [];
