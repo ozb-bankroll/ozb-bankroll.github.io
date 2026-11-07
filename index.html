@@ -13,7 +13,7 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icon-512.png">
 <link rel="icon" href="icon-512.png">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval' blob:; worker-src 'self' blob:; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data: blob:; connect-src 'self' https://ozb-bankroll.netlify.app data: blob:; media-src 'self' blob:; object-src 'none'; base-uri 'none'; form-action 'self'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval' blob:; worker-src 'self' blob:; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data: blob:; connect-src 'self' https://vbsrjrggjsvkbtaqtzrf.supabase.co https://ozb-bankroll.netlify.app data: blob:; media-src 'self' blob:; object-src 'none'; base-uri 'none'; form-action 'self'">
 <style>@font-face{font-family:'Barlow Condensed';font-style:normal;font-weight:600;font-display:swap;src:url(fonts/barlow-condensed-latin-600-normal.woff2) format('woff2')}@font-face{font-family:'Barlow Condensed';font-style:normal;font-weight:700;font-display:swap;src:url(fonts/barlow-condensed-latin-700-normal.woff2) format('woff2')}@font-face{font-family:'Barlow Condensed';font-style:normal;font-weight:800;font-display:swap;src:url(fonts/barlow-condensed-latin-800-normal.woff2) format('woff2')}@font-face{font-family:'Manrope';font-style:normal;font-weight:400;font-display:swap;src:url(fonts/manrope-latin-400-normal.woff2) format('woff2')}@font-face{font-family:'Manrope';font-style:normal;font-weight:500;font-display:swap;src:url(fonts/manrope-latin-500-normal.woff2) format('woff2')}@font-face{font-family:'Manrope';font-style:normal;font-weight:600;font-display:swap;src:url(fonts/manrope-latin-600-normal.woff2) format('woff2')}@font-face{font-family:'Manrope';font-style:normal;font-weight:700;font-display:swap;src:url(fonts/manrope-latin-700-normal.woff2) format('woff2')}@font-face{font-family:'Manrope';font-style:normal;font-weight:800;font-display:swap;src:url(fonts/manrope-latin-800-normal.woff2) format('woff2')}@font-face{font-family:'IBM Plex Mono';font-style:normal;font-weight:500;font-display:swap;src:url(fonts/ibm-plex-mono-latin-500-normal.woff2) format('woff2')}@font-face{font-family:'IBM Plex Mono';font-style:normal;font-weight:600;font-display:swap;src:url(fonts/ibm-plex-mono-latin-600-normal.woff2) format('woff2')}</style>
 <style>
 /* OZB Bankroll — « nuit de stade » : fond nuit, lumière de projecteur turquoise, cartes en relief.
@@ -489,10 +489,215 @@ html{touch-action:manipulation;-webkit-text-size-adjust:100%}
 button,a,[data-act]{touch-action:manipulation}
 @supports (-webkit-touch-callout:none){textarea.inp,select,.inp:not(.big){font-size:16px}}
 
+
+/* Market radar: dense, readable cards using the existing app typography. */
+.radar-hero{padding:24px;border:1px solid #39334e;border-radius:20px;background:linear-gradient(135deg,#242036,#11141d);margin:16px 0}.radar-hero h1{font-size:32px;margin:12px 0}.radar-eyebrow{font-size:11px;letter-spacing:1.4px;color:#b9addf}.radar-actions{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}.radar-badge{display:inline-block;padding:7px 10px;border:1px solid #8374b1;border-radius:7px;font-size:10px;letter-spacing:.8px;color:#d7ccfc}.radar-card{padding:20px;border:1px solid #353142;background:#16151e;border-radius:16px;margin:16px 0}.radar-card h2{font-size:22px;line-height:1.25;margin:12px 0}.radar-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:20px 0}.radar-grid>div{background:#211f2b;border:1px solid #34313e;padding:12px;border-radius:10px}.radar-grid small{display:block;color:#c2bdce;font-size:11px;min-height:28px}.radar-grid strong{display:block;font-size:25px;color:#dfd5ff}.radar-signals{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}.radar-signal{padding:10px 6px;text-align:center;font-size:11px;border-radius:8px}.radar-signal b{display:block;font-size:18px;margin-top:6px}.radar-signal.positive{background:#153d32;color:#a8e9ce}.radar-signal.negative{background:#4d252d;color:#ffc4c9}.radar-signal.neutral{background:#34313b;color:#e0dce9}.radar-risk{padding:14px;background:#272135;border-radius:10px;margin:16px 0}.radar-risk span{font-size:12px;display:block}.radar-risk strong{font-size:24px;display:block;margin-top:8px}.radar-drop{color:#decafa;font-size:12px}.radar-launch{margin:12px 0;border-color:#8e7cba!important}
+
+.radar-browser{margin-top:28px}.radar-tabs{display:flex;gap:8px;margin:16px 0}.radar-tabs button{flex:1}.radar-tabs button[aria-pressed="true"]{border-color:#ad96ed;background:#302442;color:#f2eaff}.radar-table-wrap{overflow-x:auto;border:1px solid #353142;border-radius:12px;margin:12px 0 24px}.radar-table{width:100%;min-width:620px;border-collapse:collapse;text-align:left}.radar-table th{font-size:11px;text-transform:uppercase;color:#c4b6df;background:#211c2c}.radar-table th,.radar-table td{padding:14px;border-bottom:1px solid #353142}.radar-table td{font-size:12px;vertical-align:top}.radar-table small{display:block;color:#b4aabd;font-size:10px;margin:4px 0}.radar-table td:first-child{font-weight:700}
+
 </style>
 </head>
 <body>
-<div class="aura" aria-hidden="true"><i></i><i></i><i></i></div>
+<script>window.OZB_CONFIG={"supabaseUrl": "https://vbsrjrggjsvkbtaqtzrf.supabase.co", "supabaseKey": "sb_publishable_tc8SLlJQsg0LRl-kRgi7DA_meEsCdXD"};</script><script src="supabase.js"></script><script>/* Account-scoped snapshots. Optimistic revisions prevent silent cross-device overwrites. */
+(function (root) {
+  "use strict";
+  function canonical(value) {
+    if (Array.isArray(value)) return value.map(canonical);
+    if (!value || typeof value !== "object") return value;
+    return Object.fromEntries(Object.keys(value).sort().map(key => [key, canonical(value[key])]));
+  }
+  const same = (left, right) => JSON.stringify(canonical(left)) === JSON.stringify(canonical(right));
+  function createCloud(client, storage, hooks) {
+    const cloud = { user: null, loading: false, dirty: false, conflict: false, error: "", revision: 0 };
+    let epoch = 0, snapshot = null, pending = null, flight = null, timer = null;
+    const key = (id) => "ozb-cloud-v1-" + id;
+    function notify() { hooks.status(cloud); }
+    function cache() {
+      try {
+        storage.setItem(key(cloud.user.id), JSON.stringify({ state: snapshot, revision: cloud.revision, dirty: cloud.dirty }));
+      } catch (error) {
+        cloud.error = "Stockage local indisponible. Garde cette page ouverte jusqu’à la sauvegarde.";
+      }
+    }
+    async function read() {
+      const result = await client.from("bankroll_accounts").select("state,revision").eq("user_id", cloud.user.id).maybeSingle();
+      if (result.error) throw result.error;
+      return result.data;
+    }
+    cloud.activate = async function (user) {
+      if (cloud.user && user && cloud.user.id === user.id) return;
+      const current = ++epoch;
+      clearTimeout(timer);
+      cloud.user = user;
+      cloud.loading = !!user;
+      cloud.dirty = false;
+      cloud.conflict = false;
+      cloud.error = "";
+      cloud.revision = 0;
+      snapshot = pending = null;
+      flight = null;
+      hooks.clear();
+      notify();
+      if (!user) return;
+      let cached = null;
+      try { cached = JSON.parse(storage.getItem(key(user.id))); } catch (error) { /* no cached state */ }
+      try {
+        const remote = await read();
+        if (current !== epoch) return;
+        if (cached && cached.dirty) {
+          snapshot = cached.state;
+          cloud.revision = cached.revision;
+          cloud.dirty = true;
+          pending = snapshot;
+          cloud.conflict = !!remote && remote.revision !== cached.revision && !same(remote.state, snapshot);
+          if (remote && same(remote.state, snapshot)) {
+            cloud.revision = remote.revision;
+            cloud.dirty = false;
+            pending = null;
+          }
+        } else {
+          snapshot = remote ? remote.state : null;
+          cloud.revision = remote ? remote.revision : 0;
+        }
+      } catch (error) {
+        if (current !== epoch) return;
+        if (cached) {
+          snapshot = cached.state;
+          cloud.revision = cached.revision;
+          cloud.dirty = !!cached.dirty;
+          pending = cloud.dirty ? snapshot : null;
+        }
+        cloud.error = "Connexion à la sauvegarde impossible. Réessaie avant de continuer.";
+        // A missing cache is not an empty remote account. Keep the screen locked.
+        if (!cached) { notify(); return; }
+      }
+      if (current !== epoch) return;
+      try { hooks.load(snapshot, user); }
+      catch (error) {
+        cloud.error = "Sauvegarde illisible. Contacte le support avant de continuer.";
+        notify();
+        return;
+      }
+      cloud.loading = false;
+      cache();
+      notify();
+      if (cloud.dirty && !cloud.conflict) await cloud.flush();
+    };
+    cloud.queue = function (state) {
+      if (!cloud.user || cloud.loading) return;
+      snapshot = JSON.parse(JSON.stringify(state));
+      pending = snapshot;
+      cloud.dirty = true;
+      cache();
+      clearTimeout(timer);
+      timer = setTimeout(cloud.flush, 600);
+      notify();
+    };
+    cloud.flush = async function () {
+      if (flight) return flight;
+      if (!cloud.user || cloud.loading || cloud.conflict || !pending) return !cloud.dirty;
+      const current = epoch, user = cloud.user;
+      const task = (async () => {
+        while (pending && current === epoch && !cloud.conflict) {
+          const sent = pending;
+          const result = await client.rpc("save_bankroll", { expected_revision: cloud.revision, new_state: sent });
+          if (current !== epoch) return false;
+          if (result.error) {
+            cloud.conflict = result.error.code === "40001";
+            cloud.error = cloud.conflict ? "Une autre version existe sur un autre appareil." : "Sauvegarde en attente. Tes modifications restent sur cet appareil.";
+            cache();
+            notify();
+            return false;
+          }
+          cloud.revision = result.data;
+          if (pending === sent) pending = null;
+          cloud.dirty = !!pending;
+          cloud.error = "";
+          cache();
+          notify();
+        }
+        return !cloud.dirty;
+      })().catch(() => {
+        if (current === epoch) { cloud.error = "Sauvegarde en attente. Réessaie quand la connexion revient."; notify(); }
+        return false;
+      });
+      flight = task;
+      try { return await task; } finally { if (flight === task) flight = null; }
+    };
+    cloud.refresh = async function () {
+      if (!cloud.user) return;
+      if (cloud.loading) {
+        const user = cloud.user;
+        cloud.user = null;
+        return cloud.activate(user);
+      }
+      if (cloud.dirty) return cloud.flush();
+      const current = epoch;
+      try {
+        const remote = await read();
+        if (current !== epoch || cloud.dirty || !remote) return;
+        snapshot = remote.state;
+        cloud.revision = remote.revision;
+        cloud.error = "";
+        hooks.load(snapshot, cloud.user);
+        cache();
+        notify();
+      } catch (error) { cloud.error = "Actualisation impossible. Réessaie."; notify(); }
+    };
+    cloud.resolve = async function (keepLocal) {
+      if (!cloud.user || !cloud.conflict) return;
+      const current = epoch;
+      const remote = await read();
+      if (current !== epoch) return;
+      cloud.revision = remote ? remote.revision : 0;
+      cloud.conflict = false;
+      cloud.error = "";
+      if (!keepLocal) {
+        pending = null;
+        cloud.dirty = false;
+        snapshot = remote ? remote.state : null;
+        hooks.load(snapshot, cloud.user);
+      }
+      cache();
+      notify();
+      if (keepLocal) return cloud.flush();
+    };
+    cloud.forgetCache = function () { if (cloud.user) storage.removeItem(key(cloud.user.id)); };
+    return cloud;
+  }
+  root.OZBCloud = { create: createCloud };
+  if (typeof module !== "undefined") module.exports = root.OZBCloud;
+})(typeof window !== "undefined" ? window : globalThis);
+
+(function(root){
+ const football={soccer_france_ligue_one:'Ligue 1',soccer_epl:'Premier League',soccer_spain_la_liga:'Liga',soccer_italy_serie_a:'Serie A',soccer_germany_bundesliga:'Bundesliga',soccer_uefa_champs_league:'Champions League',soccer_usa_mls:'MLS'};
+ function competition(key,title=''){
+  if(Object.hasOwn(football,key))return {key,sport:'football',name:football[key]};
+  if(key==='basketball_nba')return {key,sport:'basketball',name:'NBA'};
+  if(/^tennis_atp_[a-z0-9_]+$/.test(key)&&!/(doubles|outright|winner)/.test(key))return {key,sport:'tennis',name:String(title||key.replace('tennis_atp_','ATP ').replaceAll('_',' ')).slice(0,100)};
+  return null;
+ }
+ const api={football,competition};if(typeof module!=='undefined'&&module.exports)module.exports=api;else root.OZBRadarCatalog=api;
+})(typeof window!=='undefined'?window:globalThis);
+
+(function(root){
+  'use strict';
+  function allocate(spots,context,now=Date.now()) {
+    const {capital,available,dayRemaining,engaged,style,paused}=context;
+    if(![capital,available,dayRemaining,engaged].every(Number.isFinite) || capital<=0 || paused) return spots.map(()=>0);
+    let remaining=Math.max(0,Math.min(available,dayRemaining,capital*.03-engaged));
+    const cap=style==='prudent'?.005:.01;
+    return spots.map(s=>{
+      const odds=s.odds,p=s.stressProbability,at=Date.parse(s.at),kickoff=Date.parse(s.kickoff);
+      if(!Number.isFinite(odds)||odds<=1||!Number.isFinite(p)||p<=0||p>=1||!Number.isFinite(at)||at>now||now-at>300000||!Number.isFinite(kickoff)||kickoff<=now+300000)return 0;
+      const kelly=Math.max(0,(p*odds-1)/(odds-1))*.25;
+      const amount=Math.floor(Math.max(0,Math.min(capital*Math.min(cap,kelly),remaining))*100)/100;
+      remaining=Math.max(0,remaining-amount);return amount;
+    });
+  }
+  const api={allocate};if(typeof module!=='undefined'&&module.exports)module.exports=api;else root.OZBRadarRisk=api;
+})(typeof window!=='undefined'?window:globalThis);
+</script><div class="aura" aria-hidden="true"><i></i><i></i><i></i></div>
 <div class="app" id="app"></div>
 <div id="layer"></div>
 <script>
@@ -1121,6 +1326,7 @@ button,a,[data-act]{touch-action:manipulation}
   if (typeof module !== "undefined" && module.exports) module.exports = API; else root.OZB = API;
 })(typeof window !== "undefined" ? window : globalThis);
 
+
 </script>
 <script>
 /* OZB Bankroll — interface */
@@ -1290,6 +1496,7 @@ const FLAME =
   '<svg width="30" height="30" viewBox="0 0 24 24" aria-hidden="true"><path d="M12.6 2.5c.6 3.6 4.9 5.1 4.9 10.2a5.5 5.5 0 0 1-11 0c0-3 1.6-4.5 2.4-6.5.9 1.3 1.6 2 2.8 2.3-.2-2.2-.1-4.1.9-6z" fill="#f2b84b"/><path d="M12 21a3 3 0 0 1-3-3c0-1.8 1.4-2.6 2-4 .9 1.3 4 2 4 4a3 3 0 0 1-3 3z" fill="#ffe2a4"/></svg>';
 const sportIcon = (s) => (s === "tennis" ? "tennis" : s === "basket" ? "basket" : "ball");
 
+
 /* ---------- serveur OZB (codes VIP, tickets VIP) ---------- */
 const PROD =
   /\.(netlify\.app|github\.io)$/.test(location.hostname) || /(^|\.)ozb[a-z-]*\.(fr|com|app)$/.test(location.hostname);
@@ -1311,11 +1518,13 @@ const DEVICE = (() => {
   }
 })();
 async function api(path, opts) {
+  const ownerState = S;
   const r = await fetch(
     API + path,
     Object.assign({ headers: { "content-type": "text/plain;charset=UTF-8" }, cache: "no-store" }, opts || {})
   );
   const j = await r.json().catch(() => ({}));
+  if (S !== ownerState) return { status: 409, ok: false, data: { error: "Le compte a changé. Réessaie." } };
   return { status: r.status, ok: r.ok, data: j };
 }
 async function vipActivate(code) {
@@ -1467,6 +1676,7 @@ async function loadVipFeed() {
     if (!LAYER.innerHTML) render();
   } catch (e) {}
 }
+
 
 /* ---------- état ---------- */
 /* Nettoie toute donnée qui vient de l'extérieur (sauvegarde collée, stockage, serveur) :
@@ -1658,6 +1868,15 @@ function load() {
   return null;
 }
 function save() {
+  if (accountCloud && accountCloud.user) {
+    if (S && !S.demo) {
+      try {
+        localStorage.setItem("ozb-access-" + accountCloud.user.id, JSON.stringify({ vip: S.vip, pendingClaim: S.pendingClaim }));
+      } catch (error) { /* sync status reports unavailable local storage */ }
+      accountCloud.queue(accountSnapshot(S));
+    }
+    return;
+  }
   try {
     localStorage.setItem(KEY, JSON.stringify(S));
   } catch (e) {}
@@ -1697,6 +1916,207 @@ const avatarHtml = (cls) => {
     "</span>"
   );
 };
+
+
+/* Supabase account UI. Subscription tokens remain managed by the existing backend. */
+const ACCOUNT_CONFIG = window.OZB_CONFIG || {};
+const accountClient = ACCOUNT_CONFIG.supabaseUrl && ACCOUNT_CONFIG.supabaseKey && window.supabase
+  ? window.supabase.createClient(ACCOUNT_CONFIG.supabaseUrl, ACCOUNT_CONFIG.supabaseKey, {
+      auth: { flowType: "pkce", persistSession: true, autoRefreshToken: true, detectSessionInUrl: true }
+    }) : null;
+let accountBooting = !!accountClient;
+let accountBusy = false;
+let accountRecovery = false;
+let accountOfferImport = false;
+let accountListener = null;
+const accountFields = ["v", "user", "onboard", "plan", "start", "startDate", "moves", "tickets", "imports", "pauseUntil", "prefs"];
+function accountSnapshot(state) {
+  const out = {};
+  accountFields.forEach((field) => { if (state[field] !== undefined) out[field] = state[field]; });
+  return JSON.parse(JSON.stringify(out));
+}
+function accountLoad(data, user) {
+  accountOfferImport = !data && !!load() && !load().demo;
+  const state = data ? cleanState(data, true) : O.newState();
+  if (!state) throw new Error("Sauvegarde illisible. Contacte le support avant de continuer.");
+  state.user = Object.assign({ name: "", color: AV_COLORS[0], created: Date.now() }, state.user, { email: user.email, mode: "supabase" });
+  try {
+    const access = JSON.parse(localStorage.getItem("ozb-access-" + user.id));
+    if (access) {
+      state.vip = access.vip;
+      state.pendingClaim = access.pendingClaim;
+      // A server check restores access after login; cached tiers grant no rights.
+    }
+  } catch (error) { /* no local subscription token */ }
+  S = state;
+  if (state.vip) setTimeout(() => { if (S === state) vipCheck(true).then(loadVipFeed); }, 0);
+  UI.ob = null;
+  UI.obStep = 0;
+  UI.draft = null;
+  UI.lastHero = null;
+  closeSheet();
+}
+const accountCloud = accountClient ? window.OZBCloud.create(accountClient, localStorage, {
+  clear() { S = load(); UI.ob = null; UI.draft = null; UI.tab = "home"; closeSheet(); },
+  load: accountLoad,
+  status() {
+    const status = document.getElementById("account-status");
+    if (status) status.textContent = accountStatus();
+    const banner = document.getElementById("account-banner");
+    if (banner) {
+      banner.hidden = !accountCloud.error && !accountCloud.conflict;
+      banner.textContent = accountStatus();
+    }
+  }
+}) : null;
+function accountStatus() {
+  if (!accountCloud || !accountCloud.user) return "Données sur cet appareil";
+  if (accountCloud.conflict) return "Conflit entre deux appareils — choisir une version";
+  if (accountCloud.error) return accountCloud.error;
+  return accountCloud.dirty ? "Sauvegarde en cours…" : "Données sauvegardées en ligne";
+}
+function accountPanel() {
+  const connected = accountCloud && accountCloud.user;
+  return '<section class="card"><div class="label">Mon compte</div><p id="account-status" role="status">' + esc(accountStatus()) + '</p>' +
+    (connected
+      ? '<p class="hint">' + esc(accountCloud.user.email) + '</p><button class="btn btn-soft block" data-act="account-sync">Actualiser la sauvegarde</button>' +
+        '<button class="btn btn-ghost block" data-act="account-import">Importer les données locales de ce téléphone</button>' +
+        '<button class="btn btn-ghost block" data-act="account-logout">Se déconnecter</button>'
+      : '<button class="btn btn-primary block" data-act="auth-email">Créer mon compte</button><button class="btn btn-soft block" data-act="auth-login">Se connecter</button>') + '</section>';
+}
+function accountForm(mode) {
+  if (!accountClient) {
+    sheet(sheetHead("Comptes bientôt disponibles") + '<p class="lead">La sauvegarde en ligne est en cours de configuration. Tu peux déjà utiliser le mode local.</p><button class="btn btn-soft block" data-act="demo-start">Voir les données d’exemple</button>');
+    return;
+  }
+  const signup = mode === "signup", recovery = mode === "recovery";
+  sheet(sheetHead(signup ? "Créer mon compte" : recovery ? "Nouveau mot de passe" : "Se connecter") +
+    '<form id="account-form" data-mode="' + mode + '">' +
+    (recovery ? '' : '<div class="field"><label class="label" for="au-mail">E-mail</label><input class="inp" id="au-mail" name="email" type="email" autocomplete="email" required></div>') +
+    '<div class="field"><label class="label" for="au-password">Mot de passe</label><input class="inp" id="au-password" type="password" autocomplete="' + (signup || recovery ? 'new-password' : 'current-password') + '" minlength="12" required><p class="hint">12 caractères minimum.</p></div>' +
+    (signup ? '<label class="row"><input id="au-18" type="checkbox" required>J’ai 18 ans ou plus et j’accepte les conditions d’utilisation.</label>' : '') +
+    '<p id="account-message" role="status" aria-live="polite"></p><button class="btn btn-primary block" type="submit">' + (signup ? 'Créer mon compte' : recovery ? 'Enregistrer' : 'Se connecter') + '</button></form>' +
+    (!signup && !recovery ? '<button class="btn btn-ghost block" data-act="account-reset">Mot de passe oublié</button><button class="btn btn-ghost block" data-act="auth-email">Créer mon compte</button>' : '') +
+    '<button class="btn btn-ghost block" data-act="demo-start">Voir les données d’exemple</button>');
+}
+function accountMessage(message) {
+  const el = document.getElementById("account-message");
+  if (el) el.textContent = message;
+  else toast(message);
+}
+async function accountSubmit(form) {
+  if (accountBusy || !accountClient || !form.reportValidity()) return;
+  accountBusy = true;
+  const button = form.querySelector('[type="submit"]');
+  button.disabled = true;
+  const mode = form.dataset.mode;
+  const password = form.querySelector('#au-password').value;
+  const email = form.querySelector('#au-mail')?.value.trim();
+  try {
+    let result;
+    if (mode === "signup") result = await accountClient.auth.signUp({ email, password, options: { emailRedirectTo: location.origin + location.pathname } });
+    else if (mode === "recovery") result = await accountClient.auth.updateUser({ password });
+    else result = await accountClient.auth.signInWithPassword({ email, password });
+    if (result.error) throw result.error;
+    form.querySelector('#au-password').value = "";
+    if (mode === "signup" && !result.data.session) {
+      accountMessage("Vérifie ta boîte mail pour confirmer ton inscription, puis connecte-toi.");
+    } else if (mode === "recovery") {
+      accountRecovery = false;
+      closeSheet();
+      toast("Mot de passe mis à jour.");
+    }
+  } catch (error) {
+    accountMessage(mode === "login" ? "Connexion impossible. Vérifie tes identifiants et la confirmation de ton e-mail." : "Opération impossible. Vérifie les champs et réessaie dans quelques instants.");
+  } finally { accountBusy = false; button.disabled = false; }
+}
+async function accountAction(action) {
+  if (!accountClient) { accountForm("login"); return; }
+  if (action === "account-start-empty") { accountOfferImport = false; render(); return; }
+  if (action === "account-reset") {
+    const email = document.getElementById("au-mail")?.value.trim();
+    if (!email || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) { accountMessage("Indique ton e-mail au-dessus."); return; }
+    const { error } = await accountClient.auth.resetPasswordForEmail(email, { redirectTo: location.origin + location.pathname });
+    accountMessage(error ? "Envoi impossible. Réessaie dans quelques instants." : "Si ce compte existe, tu recevras un lien pour changer ton mot de passe.");
+    return;
+  }
+  if (action === "account-import") {
+    const guest = load();
+    if (!guest || guest.demo) { toast("Aucune donnée locale à importer."); return; }
+    sheet(sheetHead("Importer mes données locales") + '<p class="lead">Importer les ' + guest.tickets.length + ' tickets locaux dans le compte ' + esc(accountCloud.user.email) + ' ? Cette opération est disponible pour un compte dont la bankroll est encore vide.</p><button class="btn btn-primary block" data-act="account-import-confirm">Importer mes données</button>');
+    return;
+  }
+  if (action === "account-import-confirm") {
+    const guest = load();
+    if (!guest || guest.demo || S.demo || S.tickets.length || S.moves.length || S.start !== 0 || accountCloud.conflict) {
+      toast("Ton compte contient déjà des données. L’import automatique est annulé."); return;
+    }
+    accountLoad(accountSnapshot(guest), accountCloud.user);
+    save();
+    await accountCloud.flush();
+    render();
+    return;
+  }
+  if (action === "account-logout") {
+    if (accountCloud.dirty && !await accountCloud.flush()) {
+      toast("Sauvegarde tes modifications avant de te déconnecter. Tu peux exporter une copie depuis Mes données."); return;
+    }
+    const { error } = await accountClient.auth.signOut({ scope: "local" });
+    if (error) { toast("Déconnexion impossible. Réessaie."); return; }
+    return;
+  }
+  if (action === "account-use-cloud" || action === "account-use-local") {
+    await accountCloud.resolve(action === "account-use-local"); closeSheet(); render(); return;
+  }
+  if (accountCloud.loading && !accountCloud.user) { await accountInit(); return; }
+  await accountCloud.refresh();
+  if (accountCloud.conflict) {
+    sheet(sheetHead("Deux versions de tes données") + '<p class="lead">Un autre appareil a enregistré des modifications. Exporte une copie avant de choisir la version à conserver. La version remplacée sera abandonnée.</p><button class="btn btn-soft block" data-act="backup">Exporter une copie</button><button class="btn btn-primary block" data-act="account-use-cloud">Utiliser la version en ligne</button><button class="btn btn-soft block" data-act="account-use-local">Remplacer la version en ligne par celle-ci</button>');
+  } else render();
+}
+function accountImportView() {
+  APP.innerHTML = '<main class="screen"><section class="card"><h1>Retrouver tes tickets</h1><p>Des données sont déjà enregistrées sur ce téléphone. Tu peux les importer dans ' + esc(accountCloud.user.email) + '.</p><button class="btn btn-primary block" data-act="account-import">Importer mes données locales</button><button class="btn btn-ghost block" data-act="account-start-empty">Commencer avec un compte vide</button></section></main>';
+}
+function accountBlocked() { return accountBooting || (accountCloud && accountCloud.loading); }
+function accountLoadingView() {
+  APP.innerHTML = '<main class="screen"><section class="card"><h1>Ton compte</h1><p role="status">' + esc(accountCloud?.error || "Chargement de tes données…") + '</p><button class="btn btn-soft block" data-act="account-sync">Réessayer</button></section></main>';
+}
+async function accountInit() {
+  if (!accountClient) return;
+  if (!accountListener) accountListener = accountClient.auth.onAuthStateChange((event, session) => {
+    // Supabase callbacks are synchronous: schedule work outside the auth lock.
+    setTimeout(async () => {
+      if (event === "PASSWORD_RECOVERY") accountRecovery = true;
+      if (!session && accountCloud.user && !accountCloud.dirty) accountCloud.forgetCache();
+      await accountCloud.activate(session ? session.user : null);
+      accountBooting = false;
+      render();
+      if (session && event !== "TOKEN_REFRESHED" && !accountCloud.loading) resumeSessionRequests();
+      if (accountRecovery) accountForm("recovery");
+    }, 0);
+  });
+  try {
+    const { data, error } = await accountClient.auth.getSession();
+    if (error) throw error;
+    await accountCloud.activate(data.session ? data.session.user : null);
+    accountBooting = false;
+    render();
+  } catch (error) {
+    accountBooting = false;
+    accountCloud.loading = true;
+    accountCloud.error = "Connexion au compte impossible. Recharge la page pour réessayer.";
+    render();
+  }
+}
+document.addEventListener("submit", (event) => {
+  if (event.target.id !== "account-form") return;
+  event.preventDefault();
+  accountSubmit(event.target);
+});
+window.addEventListener("online", () => { if (accountCloud) accountCloud.refresh(); });
+window.addEventListener("beforeunload", (event) => {
+  if (accountCloud?.dirty) { event.preventDefault(); event.returnValue = ""; }
+});
 
 /* ---------- ⓘ explications pour débutants (chaque texte suit le calcul réel du moteur) ---------- */
 const ib = (k, lab) =>
@@ -2074,6 +2494,8 @@ function confetti(kind) {
 
 /* ---------- rendu principal ---------- */
 function render() {
+  if (accountBlocked()) return accountLoadingView();
+  if (accountOfferImport) return accountImportView();
   if (!S || !S.user) return renderWelcome();
   if (!S.onboard.done) return renderOnboarding();
   if (S.tier === "premium" && S.trialEnds && S.trialEnds < Date.now()) {
@@ -2093,8 +2515,9 @@ function render() {
   if (UI.tab === "home") body = homeView();
   else if (UI.tab === "tickets") body = ticketsView();
   else if (UI.tab === "stats") body = statsView();
+  else if (UI.tab === "radar") body = radarView();
   else body = profileView();
-  APP.innerHTML = '<main class="screen" id="main">' + body + "</main>" + tabbar();
+  APP.innerHTML = '<main class="screen" id="main">' + (accountCloud?.user ? '<button id="account-banner" class="btn btn-soft block" data-act="account-sync"' + (accountCloud.error || accountCloud.conflict ? '' : ' hidden') + '>' + esc(accountStatus()) + '</button>' : '') + body + "</main>" + tabbar();
   afterRender();
 }
 function tabbar() {
@@ -2182,6 +2605,7 @@ const pauseBand = () =>
       ". Tu peux régler tes tickets en cours, pas en ajouter.</span></div>"
     : "";
 
+
 /* ---------- accueil ---------- */
 function sparkSvg(pts, neg) {
   if (pts.length < 2)
@@ -2236,6 +2660,7 @@ function homeView() {
   const st = O.streak(S),
     neg = m.profit < -0.004;
   let h = topBar("Salut") + demoBand() + vipEndBand() + trialBand() + pauseBand() + installBand();
+  h += '<button class="btn btn-soft block radar-launch" data-act="radar-open">Radar automatique · Les spots du jour →</button>';
   if (!S.tickets.length) return h + firstRunView(bk);
   h +=
     '<section class="tilt-wrap" data-act="tab" data-tab="stats" style="cursor:pointer" aria-label="Voir mes stats"><div class="hero' +
@@ -3400,6 +3825,7 @@ function profileView() {
     (isVip() ? "VIP" : isPremium() ? (S.trialEnds ? "Essai" : "Premium") : "Gratuit") +
     "</span></section>" +
     demoBand();
+  h += accountPanel();
   h +=
     '<section class="card"><div class="label">Mon abonnement</div><div class="menu">' +
     row(
@@ -4155,6 +4581,74 @@ function valueOffer() {
         : "") +
       '<button class="btn btn-primary block" data-act="paywall" data-from="value">Essayer Premium 7 jours gratuits</button><p class="legal">Sur le mensuel : 7 jours gratuits, puis 7,99 €/mois. Annulable avant la fin de l\'essai sans rien payer.</p><button class="btn btn-ghost block" data-act="close">Plus tard</button>'
   );
+}
+
+
+/* Radar data are public sporting observations. The user's bankroll never leaves the browser here. */
+let radarData=null,radarBusy=false,radarError='',radarSport='football';
+const radarPct=x=>Number.isFinite(x)?frNum(x*100)+' %':'—';
+async function radarRefresh(){
+  if(radarBusy)return;radarBusy=true;radarError='';render();
+  try{const r=await fetch(API+'radar',{cache:'no-store',signal:AbortSignal.timeout(12000)});const d=await r.json();
+    if(!r.ok || !Array.isArray(d.spots))throw new Error('unavailable');radarData=d;
+  }catch{radarData=null;radarError='Source inaccessible. Aucun spot proposé.';}
+  finally{radarBusy=false;if(UI.tab==='radar')render();}
+}
+function radarView(){
+  const data=radarData, now=Date.now();
+  const allSpots=(data?.spots||[]).filter(s=>window.OZBRadarCatalog.competition(s.competitionKey)?.sport===s.sport&&Date.parse(s.at)<=now&&now-Date.parse(s.at)<=300000&&Date.parse(s.kickoff)>now+300000);
+  const seen=new Set(),spots=[];
+  for(const spot of allSpots)if(!seen.has(spot.fixtureId)){seen.add(spot.fixtureId);spots.push(spot);if(spots.length===3)break;}
+  const capital=O.bankroll(S),ex=O.exposure(S,today());
+  const stakes=window.OZBRadarRisk.allocate(spots,{capital,available:O.available(S),dayRemaining:Math.max(0,ex.base*(S.plan.dayCap||0)/100-ex.stakes),engaged:O.engaged(S),style:S.plan.style,paused:!!S.demo||!!(S.pauseUntil&&S.pauseUntil>now)},now);
+  let h=topBar('Radar')+'<section class="radar-hero"><div class="radar-eyebrow">OZB · MARKET RADAR</div><h1>Top 3 du jour</h1><p>Tous sports · Journée UTC</p><div class="radar-actions"><span class="radar-badge">MODÈLE EXPÉRIMENTAL</span><button class="btn btn-soft" data-act="radar-refresh" '+(radarBusy?'disabled':'')+'>'+(radarBusy?'Analyse…':'Actualiser')+'</button></div></section>';
+  h+='<p class="hint">Probabilités issues des résultats et des xG, indépendantes des cotes. Modèle non validé par backtest : value estimée et mises indicatives, sans garantie de rentabilité.</p>';
+  if(!accountCloud?.user)h+='<p class="hint">Bankroll locale'+(S.demo?' de démonstration':'')+'. Connecte ton compte pour retrouver ta bankroll sauvegardée.</p>';
+  if(!spots.length)h+='<section class="radar-card"><h2>'+ (radarBusy?'Recherche des spots…':'Aucun spot disponible')+'</h2><p>'+esc(radarError||(data?.status==='not_configured'?'Aucun signal calculable : données sportives indépendantes à connecter.':data?'Aucun signal ne passe les filtres, ou les cotes ont expiré.':'Actualise pour consulter les données du radar.'))+'</p></section>';
+  const labels={home:'Victoire domicile',away:'Victoire extérieur',draw:'Match nul',over:'Plus de 2,5 buts',under:'Moins de 2,5 buts',yes:'Les deux équipes marquent',no:'Les deux équipes ne marquent pas'};
+  const signal=(name,v)=>'<span class="radar-signal '+(v>.15?'positive':v<-.15?'negative':'neutral')+'">'+name+'<b>'+ (v>0?'+':'')+frNum(v)+'</b></span>';
+  spots.forEach((s,i)=>{
+    h+='<article class="radar-card"><div class="radar-eyebrow">'+esc(s.league)+' · '+esc(new Date(s.kickoff).toLocaleString('fr-FR'))+'</div><h2>'+esc(s.home)+' — '+esc(s.away)+'</h2><p>'+esc(labels[s.selection]||s.selection)+'</p>';
+    if(s.anomaly)h+='<span class="radar-badge">MARKET ANOMALY · estimation</span>';
+    h+='<div class="radar-grid"><div><small>Cote observée</small><strong>'+frNum(s.odds)+'</strong></div><div><small>Cote théorique</small><strong>'+frNum(s.fairOdds)+'</strong></div><div><small>Value estimée (EV)</small><strong>'+radarPct(s.ev)+'</strong></div><div><small>Confidence · qualité des données</small><strong>'+s.confidence+' %</strong></div></div><p class="hint">Probabilité du modèle : '+radarPct(s.probability)+'. Confidence mesure la couverture et la fraîcheur, pas les chances de gagner.</p>';
+    for(const side of ['home','away']){const sig=s.signals[side];h+='<p>'+esc(s[side])+'</p><div class="radar-signals">'+signal('Saison',sig.season)+signal('5 derniers',sig.recent)+signal(side==='home'?'Domicile':'Extérieur',sig.venue)+'</div>';}
+    h+='<p class="hint">Différence moyenne xG créés − concédés. Vert : > 0,15 ; rouge : < −0,15. Les couleurs décrivent les équipes, pas une certitude sur le pari.</p><div class="radar-risk"><span>Mise indicative · quart de Kelly plafonné</span><strong>'+eur(stakes[i])+' · '+radarPct(capital>0?stakes[i]/capital:0)+'</strong></div><p class="hint">Calcul avec probabilité réduite de 5 points (scénario de prudence, pas intervalle statistique). Maximum 1 % par spot, 0,5 % en profil prudent ; exposition totale plafonnée à 3 %.</p>';
+    h+='<p class="hint">'+esc(s.bookmaker)+' · '+esc(s.region)+' · cote observée à '+esc(new Date(s.at).toLocaleTimeString('fr-FR'))+'. Vérifie sa disponibilité chez ton bookmaker.</p>';
+    h+=s.dropping?'<p class="radar-drop">Cote en baisse : '+frNum(s.dropping.from)+' → '+frNum(s.odds)+' ('+frNum(s.dropping.percent)+' %). Cause inconnue.</p>':'<p class="hint">Mouvement de cote : aucune baisse documentée.</p>';
+    h+='</article>';
+  });
+  h+=radarTables(data,allSpots);
+  return h+'<button class="btn btn-ghost block" data-act="tab" data-tab="home">Retour à l’accueil</button>';
+}
+// Refresh only while visible. Expired recommendations disappear even on network failure.
+setInterval(()=>{if(UI.tab==='radar' && !document.hidden){render();radarRefresh();}},60000);
+
+function radarTables(data,spots){
+ const now=Date.now(),catalog=window.OZBRadarCatalog;
+ let h='<section class="radar-browser"><h2>Explorer les marchés</h2><div class="radar-tabs" role="group" aria-label="Choisir un sport">';
+ for(const [id,icon,name] of [['football','⚽','Foot'],['basketball','🏀','NBA'],['tennis','🎾','ATP']])h+='<button class="btn btn-soft" aria-pressed="'+(radarSport===id)+'" data-act="radar-sport" data-sport="'+id+'"><span aria-hidden="true">'+icon+'</span> '+name+'</button>';
+ h+='</div><p class="hint">Cotes observées · actualisation quotidienne de démonstration. Les cotes de plus de 5 minutes sont marquées anciennes et ne déclenchent aucune mise.</p>';
+ if(data?.oddsUpdatedAt)h+='<p class="hint">Dernière collecte : '+esc(new Date(data.oddsUpdatedAt).toLocaleString('fr-FR'))+' · zone '+esc(data.oddsRegion||'eu')+'</p>';
+ if(!data||data.oddsStatus==='not_configured')h+='<p class="hint">The Odds API : clé à connecter côté serveur.</p>';
+ else if(data.oddsStatus==='pending')h+='<p class="hint">Première collecte en attente.</p>';
+ else if(data.oddsStatus==='partial')h+='<p class="hint">Collecte partielle : certaines compétitions sont indisponibles.</p>';
+ const events=new Map();
+ for(const e of data?.events||[])if(catalog.competition(e.competitionKey)?.sport===radarSport&&e.sport===radarSport&&Date.parse(e.kickoff)>now)events.set(e.id,e);
+ for(const s of spots)if(s.sport===radarSport&&!events.has(s.fixtureId))events.set(s.fixtureId,{id:s.fixtureId,sport:s.sport,competitionKey:s.competitionKey,home:s.home,away:s.away,league:s.league,kickoff:s.kickoff,prices:[]});
+ const groups=new Map();for(const e of events.values()){if(!groups.has(e.competitionKey))groups.set(e.competitionKey,[]);groups.get(e.competitionKey).push(e);}
+ if(!groups.size)h+='<div class="radar-card"><h3>Aucun match disponible</h3><p>'+({football:'Ligue 1, Premier League, Liga, Serie A, Bundesliga, Champions League et MLS.',basketball:'NBA uniquement.',tennis:'Tournois ATP couverts par le fournisseur, hors WTA.'}[radarSport])+'</p></div>';
+ for(const [key,list] of [...groups].sort((a,b)=>a[0].localeCompare(b[0]))){
+ h+='<h3>'+esc(catalog.competition(key,list[0].league).name)+'</h3><div class="radar-table-wrap" tabindex="0" role="region" aria-label="Tableau des matchs"><table class="radar-table"><thead><tr><th>Match</th><th>Horaire</th><th>Cotes observées</th><th>Analyse / value</th></tr></thead><tbody>';
+ for(const e of list.sort((a,b)=>Date.parse(a.kickoff)-Date.parse(b.kickoff))){
+ const matches=spots.filter(s=>s.fixtureId===e.id),best=new Map();
+ for(const q of e.prices||[]){if(!['home','away','draw'].includes(q.selection)||!Number.isFinite(q.odds)||!Number.isFinite(Date.parse(q.at)))continue;const prev=best.get(q.selection);if(!prev||Date.parse(q.at)>Date.parse(prev.at)||q.at===prev.at&&q.odds>prev.odds)best.set(q.selection,q);}
+ const odds=[...best].map(([sel,q])=>esc(sel==='home'?e.home:sel==='away'?e.away:'Nul')+' : <b>'+frNum(q.odds)+'</b><small>'+esc(q.bookmaker)+' · '+esc(new Date(q.at).toLocaleString('fr-FR'))+(now-Date.parse(q.at)>300000?' · ancienne':'')+'</small>').join('<br>')||'—';
+ const analysis=matches.length?matches.map(s=>esc(({home:'Domicile',away:'Extérieur',draw:'Nul',over:'Over 2,5',under:'Under 2,5',yes:'BTTS oui',no:'BTTS non'})[s.selection])+' · EV '+radarPct(s.ev)+' · qualité '+s.confidence+' %').join('<br>'):'Non évalué — données sportives / modèle manquants ou aucun signal retenu';
+ h+='<tr><td>'+esc(e.home)+'<br>'+esc(e.away)+'</td><td>'+esc(new Date(e.kickoff).toLocaleString('fr-FR'))+'</td><td>'+odds+'</td><td>'+analysis+'</td></tr>';
+ }
+ h+='</tbody></table></div>';
+ }
+ return h+'<p class="hint">Les cotes seules ne produisent ni probabilité indépendante, ni Confidence Score. Le modèle xG actuel concerne le football ; les modèles NBA et ATP restent à développer.</p></section>';
 }
 
 /* ---------- ajout de ticket ---------- */
@@ -5403,16 +5897,20 @@ function exportCsv() {
   return [head].concat(rows).join("\n");
 }
 
+
 /* ---------- démo ---------- */
 /* Avant d'afficher l'exemple, on met de côté le vrai compte : quitter l'exemple y ramène, sans rien perdre */
 const DEMO_BACKUP = KEY + "-avant-exemple";
+let accountDemoBackup = null;
 function enterDemo() {
+  if (accountCloud && accountCloud.user) { accountDemoBackup = JSON.stringify(S); return; }
   if (S && S.demo) return;
   try {
     localStorage.setItem(DEMO_BACKUP, S && S.user && S.onboard && S.onboard.done ? JSON.stringify(S) : "aucun");
   } catch (e) {}
 }
 function demoBackup() {
+  if (accountCloud && accountCloud.user) return accountDemoBackup ? cleanState(JSON.parse(accountDemoBackup)) : null;
   try {
     const b = localStorage.getItem(DEMO_BACKUP);
     if (!b || b === "aucun") return null;
@@ -5576,6 +6074,7 @@ document.addEventListener("click", async (e) => {
   if (!el) return;
   const act = el.dataset.act,
     id = el.dataset.id;
+  if (accountBlocked() && act !== "account-sync") return;
   if (act === "sheet-bg") {
     if (e.target === el) closeSheet();
     return;
@@ -5672,6 +6171,13 @@ document.addEventListener("click", async (e) => {
       save();
       render();
       break;
+    case "radar-open":
+      UI.tab = "radar"; render(); radarRefresh(); break;
+    case "radar-sport":
+      if(["football","basketball","tennis"].includes(el.dataset.sport))radarSport=el.dataset.sport;
+      render(); break;
+    case "radar-refresh":
+      radarRefresh(); break;
     case "tab":
       UI.tab = el.dataset.tab;
       closeSheet();
@@ -5683,40 +6189,20 @@ document.addEventListener("click", async (e) => {
       break;
     /* bienvenue */
     case "auth-email":
-      if (IS_IOS && !STANDALONE() && !UI.installGateOk) {
-        sheet(
-          sheetHead("Avant de commencer") +
-            '<p class="lead"><b>Installe OZB sur ton écran d\'accueil d\'abord.</b> Sur iPhone, ce que tu remplis dans Safari reste dans Safari : l\'icône OZB repartirait de zéro.</p><button class="btn btn-primary block" data-act="install">Installer OZB (10 secondes)</button><button class="btn btn-ghost block" data-act="install-gate-skip">Continuer dans Safari quand même</button>'
-        );
-        break;
-      }
-      sheet(
-        sheetHead("Créer mon compte") +
-          '<div class="field"><label class="label" for="au-mail">E-mail</label><input class="inp" id="au-mail" type="email" autocomplete="email" placeholder="toi@exemple.fr" autofocus></div>' +
-          '<label class="row" style="align-items:flex-start;gap:10px;font-size:14px"><input type="checkbox" id="au-18" style="width:22px;height:22px;accent-color:#3fd0c9;margin-top:1px"><span>J\'ai 18 ans ou plus et j\'accepte les <a href="#" data-act="legal">conditions d\'utilisation</a>.</span></label>' +
-          '<button class="btn btn-primary block" data-act="auth-email-go">Continuer</button><p class="legal">Ton e-mail servira à retrouver ton compte sur un autre téléphone. Pas de spam.</p>'
-      );
+      accountForm("signup");
       break;
-    case "auth-email-go": {
-      const m = (document.getElementById("au-mail").value || "").trim(),
-        ok = document.getElementById("au-18").checked;
-      if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(m)) {
-        toast("Vérifie ton e-mail.");
-        break;
-      }
-      if (!ok) {
-        toast("Coche la case pour continuer.");
-        break;
-      }
-      closeSheet();
-      startUser({ email: m, mode: "email" });
-      break;
-    }
     case "auth-login":
-      sheet(
-        sheetHead("Se connecter") +
-          '<p class="lead">La connexion depuis un autre téléphone arrive avec la prochaine version. Sur ce téléphone, tes données sont déjà enregistrées.</p><button class="btn btn-primary block" data-act="auth-email">Créer mon compte</button><button class="btn btn-soft block" data-act="demo-start">Voir l\'app avec des données d\'exemple</button>'
-      );
+      accountForm("login");
+      break;
+    case "account-start-empty":
+    case "account-reset":
+    case "account-import":
+    case "account-import-confirm":
+    case "account-logout":
+    case "account-sync":
+    case "account-use-cloud":
+    case "account-use-local":
+      try { await accountAction(act); } catch (error) { toast("Opération impossible. Tes données sont conservées."); }
       break;
     /* iPhone dans Safari (pas installée) : l'app de l'écran d'accueil ne voit pas les données de Safari.
        On fait installer AVANT l'inscription, pour que personne ne perde ses tickets. */
@@ -6496,12 +6982,14 @@ document.addEventListener("click", async (e) => {
       break;
     }
     case "wipe":
+      if (accountCloud && accountCloud.user) { toast("Pour effacer les données du compte, contacte le support. Tu peux te déconnecter depuis Mon compte."); break; }
       sheet(
         sheetHead("Tout effacer") +
           '<p class="lead">Tes tickets, ta bankroll et ton compte sur ce téléphone seront supprimés. C\'est définitif.</p><button class="btn btn-soft block" style="color:var(--loss)" data-act="wipe-go">Tout effacer</button><button class="btn btn-ghost block" data-act="close">Annuler</button>'
       );
       break;
     case "wipe-go":
+      if (accountCloud && accountCloud.user) break;
       try {
         localStorage.removeItem(KEY);
       } catch (err) {}
@@ -6729,32 +7217,36 @@ window.__OZB_APP = {
 };
 track("open");
 if (STANDALONE()) track("install");
-if (S && S.vip) {
-  vipCheck(false).then(loadVipFeed);
+function resumeSessionRequests() {
+  if (S && S.vip) {
+    vipCheck(false).then(loadVipFeed);
+  }
+  try {
+    {
+      const qc = (location.search.match(/[?&]claim=([\w-]{10,40})/) || [])[1];
+      if (qc && S && S.onboard && S.onboard.done) {
+        if (!S.pendingClaim || S.pendingClaim.id !== qc) S.pendingClaim = { id: qc, at: Date.now() };
+        save();
+        history.replaceState(null, "", location.pathname);
+        setTimeout(() => claimCheck(true), 300);
+      } else if (S && S.pendingClaim) setTimeout(claimCheck, 600);
+    }
+    const q = new URLSearchParams(location.search),
+      shared = [q.get("title"), q.get("text"), q.get("url")].filter(Boolean).join("\n");
+    if (shared && S && S.onboard && S.onboard.done) {
+      history.replaceState(null, "", location.pathname);
+      const p = O.parseTicketText(shared);
+      if (importsLeft() > 0) {
+        useImport();
+        UI.draft = applyParsed(p, "share");
+        openForm(firstMissing(UI.draft));
+      } else needImport();
+    }
+  } catch (e) {}
 }
 render();
-try {
-  {
-    const qc = (location.search.match(/[?&]claim=([\w-]{10,40})/) || [])[1];
-    if (qc && S && S.onboard && S.onboard.done) {
-      if (!S.pendingClaim || S.pendingClaim.id !== qc) S.pendingClaim = { id: qc, at: Date.now() };
-      save();
-      history.replaceState(null, "", location.pathname);
-      setTimeout(() => claimCheck(true), 300);
-    } else if (S && S.pendingClaim) setTimeout(claimCheck, 600);
-  }
-  const q = new URLSearchParams(location.search),
-    shared = [q.get("title"), q.get("text"), q.get("url")].filter(Boolean).join("\n");
-  if (shared && S && S.onboard && S.onboard.done) {
-    history.replaceState(null, "", location.pathname);
-    const p = O.parseTicketText(shared);
-    if (importsLeft() > 0) {
-      useImport();
-      UI.draft = applyParsed(p, "share");
-      openForm(firstMissing(UI.draft));
-    } else needImport();
-  }
-} catch (e) {}
+if (accountClient) accountInit();
+else resumeSessionRequests();
 })();
 
 </script>
