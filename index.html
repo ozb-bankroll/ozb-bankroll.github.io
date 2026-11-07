@@ -7,9 +7,9 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="OZB Bankroll">
+<meta name="apple-mobile-web-app-title" content="OzbStacker">
 <meta name="description" content="Ta bankroll, tes tickets et ton vrai solde du mois. Sans tableau, sans calcul.">
-<title>OZB Bankroll</title>
+<title>OzbStacker</title>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icon-512.png">
 <link rel="icon" href="icon-512.png">
@@ -494,6 +494,14 @@ button,a,[data-act]{touch-action:manipulation}
 .radar-hero{padding:24px;border:1px solid #39334e;border-radius:20px;background:linear-gradient(135deg,#242036,#11141d);margin:16px 0}.radar-hero h1{font-size:32px;margin:12px 0}.radar-eyebrow{font-size:11px;letter-spacing:1.4px;color:#b9addf}.radar-actions{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}.radar-badge{display:inline-block;padding:7px 10px;border:1px solid #8374b1;border-radius:7px;font-size:10px;letter-spacing:.8px;color:#d7ccfc}.radar-card{padding:20px;border:1px solid #353142;background:#16151e;border-radius:16px;margin:16px 0}.radar-card h2{font-size:22px;line-height:1.25;margin:12px 0}.radar-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:20px 0}.radar-grid>div{background:#211f2b;border:1px solid #34313e;padding:12px;border-radius:10px}.radar-grid small{display:block;color:#c2bdce;font-size:11px;min-height:28px}.radar-grid strong{display:block;font-size:25px;color:#dfd5ff}.radar-signals{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}.radar-signal{padding:10px 6px;text-align:center;font-size:11px;border-radius:8px}.radar-signal b{display:block;font-size:18px;margin-top:6px}.radar-signal.positive{background:#153d32;color:#a8e9ce}.radar-signal.negative{background:#4d252d;color:#ffc4c9}.radar-signal.neutral{background:#34313b;color:#e0dce9}.radar-risk{padding:14px;background:#272135;border-radius:10px;margin:16px 0}.radar-risk span{font-size:12px;display:block}.radar-risk strong{font-size:24px;display:block;margin-top:8px}.radar-drop{color:#decafa;font-size:12px}.radar-launch{margin:12px 0;border-color:#8e7cba!important}
 
 .radar-browser{margin-top:28px}.radar-tabs{display:flex;gap:8px;margin:16px 0}.radar-tabs button{flex:1}.radar-tabs button[aria-pressed="true"]{border-color:#ad96ed;background:#302442;color:#f2eaff}.radar-table-wrap{overflow-x:auto;border:1px solid #353142;border-radius:12px;margin:12px 0 24px}.radar-table{width:100%;min-width:620px;border-collapse:collapse;text-align:left}.radar-table th{font-size:11px;text-transform:uppercase;color:#c4b6df;background:#211c2c}.radar-table th,.radar-table td{padding:14px;border-bottom:1px solid #353142}.radar-table td{font-size:12px;vertical-align:top}.radar-table small{display:block;color:#b4aabd;font-size:10px;margin:4px 0}.radar-table td:first-child{font-weight:700}
+
+/* OzbStacker workspace and compact market terminal */
+:root{--accent:#6eff8d;--accent-hi:#a3ffb6;--accent-soft:rgba(110,255,141,.09);--accent-ink:#07130b}
+body{background:#090d10}.aura{display:none}.stacker-brand{font-weight:800;font-size:24px;color:#f4f6f5;text-decoration:none;padding:8px 10px 26px}.stacker-brand span{color:var(--accent)}
+.stacker-nav::before{display:none}.nav-label{font-size:10px;font-weight:800;letter-spacing:1.1px;color:#83948b;padding:14px 10px 10px}.nav-label small{display:block;font-weight:400;font-size:10px;letter-spacing:0;margin-top:4px}.nav-section{display:flex;flex-direction:column;gap:4px}.nav-section+.nav-section{border-top:1px solid #26312b;margin-top:24px;padding-top:12px}.nav-add{margin:10px 0;background:#15271b;color:#90ffa8;border:1px solid #31573b;font-size:11px;padding:12px 8px}.nav-account{margin-top:auto}.nav-account>small{display:block;color:#74837a;font-size:10px;padding:12px}.stacker-nav .tab{min-height:44px}.stacker-nav .tab span{white-space:normal;text-align:left}
+.radar-terminal{min-width:0}.radar-heading{display:flex;align-items:center;justify-content:space-between;gap:16px;margin:12px 0 24px}.radar-heading h1{font-family:var(--body);font-size:26px;margin:8px 0;letter-spacing:-.7px}.radar-eyebrow{color:#8caa96;font-size:10px;letter-spacing:1.5px}.radar-top{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.radar-card{background:#101b14;border:1px solid #294a32;border-radius:10px;padding:18px;margin:0;min-width:0}.radar-card h2{font-family:inherit;font-size:14px;margin:12px 0;color:#f3fff6}.radar-empty{grid-column:1/-1;padding:24px;color:#9daaa2;background:#101613;border:1px dashed #304039;border-radius:10px;font-size:12px}.radar-empty h2,.radar-empty h3{color:#d7e2db;font-size:16px;margin-bottom:8px}.radar-badge{padding:3px 6px;color:#8bffa6;border:1px solid #325e3b;font-size:9px;margin-bottom:8px}.signal-active{color:#8aff9f;font-weight:800;font-size:12px;white-space:nowrap}.radar-card .signal-active{font-size:16px;overflow:hidden;text-overflow:ellipsis}.signal-meta{font-size:11px;color:#a6b8aa;margin:8px 0}.radar-card-footer{display:flex;justify-content:space-between;align-items:center;border-top:1px solid #263d2c;padding-top:12px;margin-top:14px}.radar-risk{background:none;padding:0;margin:0;white-space:nowrap}.radar-risk strong{font-family:var(--mono);font-size:14px;margin:0;color:#d7ffe0}.radar-risk small{font-size:10px;color:#8eaa97;display:block;margin-top:3px}.radar-play{background:#72ff91;color:#09230f;padding:8px 13px;border-radius:5px;font-size:11px;min-height:34px}.radar-play:disabled{background:#1a231e;color:#708076;opacity:1;border:1px solid #2a352e;cursor:not-allowed}.radar-browser{margin-top:28px}.radar-tabs{max-width:440px;gap:6px;margin:0 0 14px}.radar-tabs button{border-radius:6px;background:#101713;color:#8f9f95;border-color:#26362c}.radar-tabs button[aria-pressed="true"]{background:#1a3422;color:#89ffa2;border-color:#437c51}.radar-feed-status{color:#819187;font-size:10px;font-family:var(--mono);margin-bottom:24px}.radar-league{font-family:inherit;font-size:12px;display:flex;justify-content:space-between;margin:20px 0 8px}.radar-league small{font-size:10px;color:#819187;font-weight:400}.radar-table-wrap{border:1px solid #26342c;border-radius:6px;margin:0 0 18px}.radar-table{min-width:1000px;background:#0c120e}.radar-table th{background:#121c15;color:#8da494;font-size:9px;letter-spacing:.5px}.radar-table th,.radar-table td{padding:10px 12px;border-bottom:1px solid #202e25;vertical-align:middle}.radar-table td{font-size:11px;white-space:nowrap}.radar-table tr:hover{background:#131e17}.radar-table small{color:#849c8c;font-size:9px;margin:4px 0 0}.radar-match{max-width:270px;overflow:hidden;text-overflow:ellipsis;font-weight:700}.radar-match>span{color:#60796a;margin:0 5px}.radar-time{font-family:var(--mono);color:#899c8f;font-size:10px!important}.radar-time b{color:#d3dfd6;margin-left:5px}.indicator-pair{display:flex;flex-direction:column;gap:3px}.indicator-team{display:flex;gap:3px}.radar-signal{font-size:8px;padding:3px 4px;border-radius:3px;min-width:43px}.radar-signal.positive{background:#173d24;color:#81ff9a}.radar-signal.negative{background:#42201f;color:#ff8b87}.radar-signal.neutral,.radar-signal.unknown{background:#202a24;color:#86978d}.quote{font-family:var(--mono);font-size:10px;padding:3px;background:#19241d;border-radius:3px}.radar-method{font-size:11px;color:#8e9f94;line-height:1.8;margin:20px 0}.radar-method summary{cursor:pointer}.radar-method p{margin-top:10px}.radar-launch{border-color:#36583f!important}
+@media(min-width:1024px){.stacker-nav{width:244px;background:#0e1511;padding:20px 14px;overflow-y:auto}.app{padding-left:244px}.screen{max-width:1600px;padding:26px 32px}.screen:has(.radar-terminal){display:flex;flex-direction:column}.screen:has(.radar-terminal)>.top{margin-bottom:0}}
+@media(max-width:1023px){.app{max-width:none}.stacker-nav{position:relative;transform:none;left:auto;bottom:auto;width:100%;max-width:none;display:flex;flex-direction:column;gap:8px;padding:16px;background:#0e1511;border-bottom:1px solid #26342c;order:-1}.stacker-brand{padding:0 0 4px;font-size:21px}.nav-section{display:flex;flex-direction:row;flex-wrap:wrap}.nav-label{width:100%;padding:4px 0}.nav-label small{display:inline;margin-left:8px}.nav-section+.nav-section{margin:4px 0 0;padding:8px 0 0}.stacker-nav .tab{flex:1;flex-direction:row;gap:6px;justify-content:flex-start;padding:8px;font-size:10px}.nav-add{margin:4px 0;width:100%}.nav-account{position:absolute;right:12px;top:10px}.nav-account>small{display:none}.nav-account .tab{font-size:10px}.screen{padding-bottom:30px}.radar-heading h1{font-size:22px}.radar-top{grid-template-columns:1fr}.radar-heading{align-items:flex-start}.radar-heading>.btn{font-size:10px}.radar-table-wrap{max-width:100%}}
 
 </style>
 </head>
@@ -1329,7 +1337,7 @@ button,a,[data-act]{touch-action:manipulation}
 
 </script>
 <script>
-/* OZB Bankroll — interface */
+/* OzbStacker — interface */
 (function () {
   "use strict";
 const O = window.OZB;
@@ -2521,27 +2529,8 @@ function render() {
   afterRender();
 }
 function tabbar() {
-  const t = (id, ic, lab) =>
-    '<button class="tab" data-act="tab" data-tab="' +
-    id +
-    '"' +
-    (UI.tab === id ? ' aria-current="page"' : "") +
-    ">" +
-    I(ic, 22) +
-    "<span>" +
-    lab +
-    "</span></button>";
-  return (
-    '<nav class="tabbar" aria-label="Navigation">' +
-    t("home", "home", "Accueil") +
-    t("tickets", "ticket", "Tickets") +
-    '<button class="fab" data-act="add" aria-label="Ajouter un ticket">' +
-    I("plus", 28) +
-    "</button>" +
-    t("stats", "chart", "Stats") +
-    t("profile", "user", "Profil") +
-    "</nav>"
-  );
+ const tab=(id,icon,label)=>'<button class="tab" data-act="'+(id==='radar'?'radar-open':'tab')+'" data-tab="'+id+'"'+(UI.tab===id?' aria-current="page"':'')+'>'+I(icon,20)+'<span>'+label+'</span></button>';
+ return '<nav class="tabbar stacker-nav" aria-label="Navigation principale"><a class="stacker-brand" href="#">Ozb<span>Stacker</span></a><div class="nav-section"><div class="nav-label">GESTION BANKROLL <small>Privée</small></div>'+tab('home','home','Accueil / Dashboard')+tab('tickets','ticket','Mes Tickets')+tab('stats','chart','Statistiques')+'<button class="btn nav-add" data-act="m-manual">+ Ajouter un ticket manuel</button></div><div class="nav-section"><div class="nav-label">RADAR DE TRADING <small>Algorithmique</small></div>'+tab('radar','chart','Radar Automatique')+'</div><div class="nav-account">'+tab('profile','user','Mon compte')+'<small>Capital privé. Décisions personnelles.</small></div></nav>';
 }
 function topBar(title) {
   return (
@@ -2553,7 +2542,7 @@ function topBar(title) {
     esc(S.user.name || "Toi") +
     "</b></div></div>" +
     (isVip()
-      ? '<span class="tier vip">VIP</span>'
+      ? '<span class="tier premium">Premium</span>'
       : isPremium()
         ? '<button class="tier premium" data-act="paywall">' +
           (S.trialEnds ? "Essai · " + trialDays() + " j" : "Premium") +
@@ -2728,7 +2717,7 @@ function homeView() {
   }
   h += insightCard(ym);
   h += adaptCards();
-  h += vipCard();
+
   h +=
     '<button class="card tight" data-act="add" style="display:flex;align-items:center;gap:12px;text-align:left;width:100%"><span class="insight"><span class="ic">' +
     I("plus") +
@@ -2749,7 +2738,7 @@ function firstRunView(bk) {
     '<div class="methods">' +
     methodsHtml() +
     "</div></section>" +
-    vipCard() +
+
     '<p class="legal">Jouer comporte des risques : endettement, isolement, dépendance. Pour être aidé, appelle le 09 74 75 13 13 (appel non surtaxé). Interdit aux moins de 18 ans.</p>'
   );
 }
@@ -3822,7 +3811,7 @@ function profileView() {
     '</div></div><span class="tier ' +
     (isVip() ? "vip" : isPremium() ? "premium" : "free") +
     '">' +
-    (isVip() ? "VIP" : isPremium() ? (S.trialEnds ? "Essai" : "Premium") : "Gratuit") +
+    (isVip() ? "Premium" : isPremium() ? (S.trialEnds ? "Essai" : "Premium") : "Gratuit") +
     "</span></section>" +
     demoBand();
   h += accountPanel();
@@ -3832,7 +3821,7 @@ function profileView() {
       "sub",
       "crown",
       "Mon abonnement",
-      isVip() ? "VIP" : isPremium() ? (S.trialEnds ? "Essai · " + trialDays() + " j" : "Premium") : "Gratuit"
+      isVip() ? "Premium" : isPremium() ? (S.trialEnds ? "Essai · " + trialDays() + " j" : "Premium") : "Gratuit"
     ) +
     row("paywall", "sparkle", "Comparer les offres", "") +
     "</div></section>";
@@ -3844,7 +3833,7 @@ function profileView() {
       (isPremium() ? "Passer au VIP" : "Passer à Premium") +
       '</b><span class="hint" style="display:block">' +
       (isPremium()
-        ? "Le service d'analyses OZB, en plus de Premium"
+        ? "Gestion privée et radar automatique"
         : "7 jours gratuits, puis 7,99 €/mois · imports illimités, analyse complète") +
       "</span></span>" +
       I("chevR") +
@@ -3878,7 +3867,7 @@ function profileView() {
     row("code", "star", "J'ai un code", "") +
     row("legal", "help", "Conditions et confidentialité", "") +
     "</div></section>";
-  h += '<p class="legal">OZB Bankroll · version 1.0 · contact : ozb.prono@gmail.com</p>';
+  h += '<p class="legal">OzbStacker · version 1.0 · contact : ozb.prono@gmail.com</p>';
   return h;
 }
 
@@ -3886,7 +3875,7 @@ function profileView() {
 function renderWelcome() {
   APP.innerHTML =
     '<main class="screen flow">' +
-    '<div class="row" style="gap:8px"><b style="font-family:var(--display);font-size:26px;letter-spacing:.05em">OZB</b><span class="hint">Bankroll</span></div>' +
+    '<div class="row" style="gap:8px"><b style="font-family:var(--display);font-size:26px;letter-spacing:.05em">OzbStacker</b></div>' +
     '<div class="stage" aria-hidden="true">' +
     '<div class="float f1"><div class="label">Ma bankroll</div><div style="font-family:var(--display);font-weight:800;font-size:40px;line-height:1">412,60 €</div>' +
     sparkSvg([380, 386, 383, 395, 391, 402, 398, 409, 404, 412.6], false) +
@@ -4117,7 +4106,7 @@ function renderOnboarding() {
     h =
       '<span class="eyebrow">Ton plan de bankroll</span><h1>Comment tu veux <em>miser</em> ?</h1><p class="lead">Chaque profil fixe tes mises en % de ton disponible. Tu pourras changer quand tu veux. Aucun profil ne garantit de gagner.</p><div class="opts">' +
       card("prudent", "shield", "Petites mises, peu de risque") +
-      card("equilibre", "target", "Le plan du VIP OZB") +
+      card("equilibre", "target", "Le plan équilibré") +
       card("offensif", "bolt", "Mises plus fortes, plus de variance") +
       "</div>";
   } else if (step === "cap") {
@@ -4409,7 +4398,6 @@ function paywallHtml() {
       trialOk ? "Essai gratuit" : ""
     ) +
     plan("year", "Premium annuel", "79,99 €<small>/an</small>", "Soit 6,67 € par mois · sans essai", "−17 %") +
-    plan("vip", "VIP OZB", "24,99 €<small>/mois</small>", "Premium + analyses OZB du jour · sans essai", "", "vipc") +
     "</div>" +
     table +
     tl +
@@ -4514,7 +4502,7 @@ function pwIntro(sel) {
 }
 function openPaywall(planSel, from) {
   track("premium_click");
-  UI.pwSel = planSel || (isPremium() && !isVip() ? "vip" : "month");
+  UI.pwSel = planSel === "year" ? "year" : "month";
   UI.pwFrom = from || "";
   sheet(paywallHtml());
 }
@@ -4524,7 +4512,7 @@ function subSheet() {
   const end = S.trialEnds ? new Date(S.trialEnds).toLocaleDateString("fr-FR", { day: "numeric", month: "long" }) : "";
   if (isVip())
     h +=
-      '<div class="card"><span class="tier vip">VIP</span><h2 style="margin-top:8px">VIP OZB actif</h2><p class="hint">Premium inclus. Les analyses OZB du jour s\'affichent sur l\'accueil.</p></div><button class="btn btn-soft block" data-act="sub-cancel">Résilier le VIP</button>';
+      '<div class="card"><span class="tier premium">Premium</span><h2 style="margin-top:8px">Premium actif</h2><p class="hint">Premium inclus. Gestion de bankroll et radar.</p></div><button class="btn btn-soft block" data-act="sub-cancel">Gérer mon abonnement</button>';
   else if (isPremium() && S.trialEnds)
     h +=
       '<div class="card"><span class="tier premium">Essai</span><h2 style="margin-top:8px">Essai Premium · ' +
@@ -4584,72 +4572,74 @@ function valueOffer() {
 }
 
 
-/* Radar data are public sporting observations. The user's bankroll never leaves the browser here. */
+/* Public market observations; private bankroll stays in the existing account flow. */
 let radarData=null,radarBusy=false,radarError='',radarSport='football';
 const radarPct=x=>Number.isFinite(x)?frNum(x*100)+' %':'—';
+const radarKey=s=>s.id||[s.fixtureId,s.market||'1x2',s.selection].join('_');
+const radarPick=s=>({home:s.home,away:s.away,draw:'Match nul',over:'Plus de 2,5 buts',under:'Moins de 2,5 buts',yes:'Les deux équipes marquent',no:'Les deux équipes ne marquent pas'}[s.selection]||s.selection);
+function radarEligible(now=Date.now()){
+ return (radarData?.spots||[]).filter(s=>window.OZBRadarCatalog.competition(s.competitionKey)?.sport===s.sport&&Number.isFinite(s.odds)&&s.odds>1&&Date.parse(s.at)<=now&&now-Date.parse(s.at)<=300000&&Date.parse(s.kickoff)>now+300000).sort((a,b)=>(b.stressEv??b.ev??0)-(a.stressEv??a.ev??0));
+}
+function radarBudget(spots){
+ const capital=O.bankroll(S),ex=O.exposure(S,today());
+ return window.OZBRadarRisk.allocate(spots,{capital,available:O.available(S),dayRemaining:Math.max(0,ex.base*(S.plan.dayCap||0)/100-ex.stakes),engaged:O.engaged(S),style:S.plan.style,paused:!!S.demo||paused()});
+}
 async function radarRefresh(){
-  if(radarBusy)return;radarBusy=true;radarError='';render();
-  try{const r=await fetch(API+'radar',{cache:'no-store',signal:AbortSignal.timeout(12000)});const d=await r.json();
-    if(!r.ok || !Array.isArray(d.spots))throw new Error('unavailable');radarData=d;
-  }catch{radarData=null;radarError='Source inaccessible. Aucun spot proposé.';}
-  finally{radarBusy=false;if(UI.tab==='radar')render();}
+ if(radarBusy)return;radarBusy=true;radarError='';render();
+ try{const r=await fetch(API+'radar',{cache:'no-store',signal:AbortSignal.timeout(12000)});const d=await r.json();if(!r.ok||!Array.isArray(d.spots))throw Error();radarData=d;}
+ catch{radarData=null;radarError='Source inaccessible. Aucun spot proposé.';}
+ finally{radarBusy=false;if(UI.tab==='radar')render();}
 }
+function radarPlay(key){
+ const s=radarEligible().find(s=>radarKey(s)===key);
+ if(!s){toast('Signal expiré. Actualise le radar.');return;}
+ if(paused()){toast('Ajout désactivé pendant ta pause.');return;}
+ UI.tab='tickets';render();
+ UI.draft=newDraft('radar',{legs:[{match:s.home+' — '+s.away,pick:radarPick(s)}],sport:({football:'foot',basketball:'basket',tennis:'tennis'})[s.sport],market:s.market==='total_2.5'?'Plus/moins':s.market==='btts'?'Les 2 marquent':'Résultat',league:window.OZBRadarCatalog.competition(s.competitionKey,s.league).name,type:'value',odds:String(s.odds),stake:'',book:s.bookmaker||'',note:'Signal radar · cote observée '+new Date(s.at).toLocaleString('fr-FR')});
+ openForm('f-stake');
+}
+function radarPlayButton(s){return '<button class="btn radar-play" data-act="radar-play" data-spot="'+esc(radarKey(s))+'"'+(paused()?' disabled':'')+'>Jouer</button>';}
+function radarIndicators(s){
+ return '<span class="indicator-pair">'+['home','away'].map(side=>'<span class="indicator-team" title="'+esc(s?.[side]||side)+'">'+[['Forme','recent'],['H2H','h2h'],['Saison','season']].map(([label,key])=>{
+ // H2H is not supplied by the current model. Never substitute venue performance.
+ const v=key==='h2h'?null:s?.signals?.[side]?.[key],valid=Number.isFinite(v),state=valid?(v>.15?'positive':v<-.15?'negative':'neutral'):'unknown';
+ return '<span class="radar-signal '+state+'" title="'+esc((s?.[side]||side)+' · '+label+' : '+(valid?frNum(v)+' xG nets':'données indisponibles'))+'">'+label+' '+(valid?(v>.15?'↑':v<-.15?'↓':'='):'—')+'</span>';
+ }).join('')+'</span>').join('')+'</span>';
+}
+function radarRisk(s,stakes){const amount=stakes.get(radarKey(s))||0;return '<span class="radar-risk" title="Quart de Kelly prudent, plafonds du capital et exposition globale"><strong>'+eur(amount)+'</strong><small>'+radarPct(O.bankroll(S)>0?amount/O.bankroll(S):0)+' du capital</small></span>';}
 function radarView(){
-  const data=radarData, now=Date.now();
-  const allSpots=(data?.spots||[]).filter(s=>window.OZBRadarCatalog.competition(s.competitionKey)?.sport===s.sport&&Date.parse(s.at)<=now&&now-Date.parse(s.at)<=300000&&Date.parse(s.kickoff)>now+300000);
-  const seen=new Set(),spots=[];
-  for(const spot of allSpots)if(!seen.has(spot.fixtureId)){seen.add(spot.fixtureId);spots.push(spot);if(spots.length===3)break;}
-  const capital=O.bankroll(S),ex=O.exposure(S,today());
-  const stakes=window.OZBRadarRisk.allocate(spots,{capital,available:O.available(S),dayRemaining:Math.max(0,ex.base*(S.plan.dayCap||0)/100-ex.stakes),engaged:O.engaged(S),style:S.plan.style,paused:!!S.demo||!!(S.pauseUntil&&S.pauseUntil>now)},now);
-  let h=topBar('Radar')+'<section class="radar-hero"><div class="radar-eyebrow">OZB · MARKET RADAR</div><h1>Top 3 du jour</h1><p>Tous sports · Journée UTC</p><div class="radar-actions"><span class="radar-badge">MODÈLE EXPÉRIMENTAL</span><button class="btn btn-soft" data-act="radar-refresh" '+(radarBusy?'disabled':'')+'>'+(radarBusy?'Analyse…':'Actualiser')+'</button></div></section>';
-  h+='<p class="hint">Probabilités issues des résultats et des xG, indépendantes des cotes. Modèle non validé par backtest : value estimée et mises indicatives, sans garantie de rentabilité.</p>';
-  if(!accountCloud?.user)h+='<p class="hint">Bankroll locale'+(S.demo?' de démonstration':'')+'. Connecte ton compte pour retrouver ta bankroll sauvegardée.</p>';
-  if(!spots.length)h+='<section class="radar-card"><h2>'+ (radarBusy?'Recherche des spots…':'Aucun spot disponible')+'</h2><p>'+esc(radarError||(data?.status==='not_configured'?'Aucun signal calculable : données sportives indépendantes à connecter.':data?'Aucun signal ne passe les filtres, ou les cotes ont expiré.':'Actualise pour consulter les données du radar.'))+'</p></section>';
-  const labels={home:'Victoire domicile',away:'Victoire extérieur',draw:'Match nul',over:'Plus de 2,5 buts',under:'Moins de 2,5 buts',yes:'Les deux équipes marquent',no:'Les deux équipes ne marquent pas'};
-  const signal=(name,v)=>'<span class="radar-signal '+(v>.15?'positive':v<-.15?'negative':'neutral')+'">'+name+'<b>'+ (v>0?'+':'')+frNum(v)+'</b></span>';
-  spots.forEach((s,i)=>{
-    h+='<article class="radar-card"><div class="radar-eyebrow">'+esc(s.league)+' · '+esc(new Date(s.kickoff).toLocaleString('fr-FR'))+'</div><h2>'+esc(s.home)+' — '+esc(s.away)+'</h2><p>'+esc(labels[s.selection]||s.selection)+'</p>';
-    if(s.anomaly)h+='<span class="radar-badge">MARKET ANOMALY · estimation</span>';
-    h+='<div class="radar-grid"><div><small>Cote observée</small><strong>'+frNum(s.odds)+'</strong></div><div><small>Cote théorique</small><strong>'+frNum(s.fairOdds)+'</strong></div><div><small>Value estimée (EV)</small><strong>'+radarPct(s.ev)+'</strong></div><div><small>Confidence · qualité des données</small><strong>'+s.confidence+' %</strong></div></div><p class="hint">Probabilité du modèle : '+radarPct(s.probability)+'. Confidence mesure la couverture et la fraîcheur, pas les chances de gagner.</p>';
-    for(const side of ['home','away']){const sig=s.signals[side];h+='<p>'+esc(s[side])+'</p><div class="radar-signals">'+signal('Saison',sig.season)+signal('5 derniers',sig.recent)+signal(side==='home'?'Domicile':'Extérieur',sig.venue)+'</div>';}
-    h+='<p class="hint">Différence moyenne xG créés − concédés. Vert : > 0,15 ; rouge : < −0,15. Les couleurs décrivent les équipes, pas une certitude sur le pari.</p><div class="radar-risk"><span>Mise indicative · quart de Kelly plafonné</span><strong>'+eur(stakes[i])+' · '+radarPct(capital>0?stakes[i]/capital:0)+'</strong></div><p class="hint">Calcul avec probabilité réduite de 5 points (scénario de prudence, pas intervalle statistique). Maximum 1 % par spot, 0,5 % en profil prudent ; exposition totale plafonnée à 3 %.</p>';
-    h+='<p class="hint">'+esc(s.bookmaker)+' · '+esc(s.region)+' · cote observée à '+esc(new Date(s.at).toLocaleTimeString('fr-FR'))+'. Vérifie sa disponibilité chez ton bookmaker.</p>';
-    h+=s.dropping?'<p class="radar-drop">Cote en baisse : '+frNum(s.dropping.from)+' → '+frNum(s.odds)+' ('+frNum(s.dropping.percent)+' %). Cause inconnue.</p>':'<p class="hint">Mouvement de cote : aucune baisse documentée.</p>';
-    h+='</article>';
-  });
-  h+=radarTables(data,allSpots);
-  return h+'<button class="btn btn-ghost block" data-act="tab" data-tab="home">Retour à l’accueil</button>';
+ const all=radarEligible(),seen=new Set(),top=all.filter(s=>{if(seen.has(s.fixtureId))return false;seen.add(s.fixtureId);return true;}).slice(0,3);
+ // One shared allocation across the entire radar, never a new budget per row or sport.
+ const amounts=radarBudget(all),stakes=new Map(all.map((s,i)=>[radarKey(s),amounts[i]]));
+ let h=topBar('Radar Automatique')+'<section class="radar-terminal"><header class="radar-heading"><div><div class="radar-eyebrow">OZBSTACKER / MARKET INTELLIGENCE</div><h1>Top Market Anomalies</h1><p class="hint">Journée UTC · '+top.length+' / 3 signaux · Modèle expérimental</p></div><button class="btn btn-soft" data-act="radar-refresh" '+(radarBusy?'disabled':'')+'>'+(radarBusy?'Analyse…':'Actualiser')+'</button></header><div class="radar-top">';
+ if(!top.length)h+='<article class="radar-card radar-empty"><h2>Aucun spot disponible</h2><p>'+esc(radarError||(radarData?.status==='not_configured'?'Aucun signal calculable : données sportives indépendantes à connecter.':'Aucun signal admissible ou cotes expirées.'))+'</p></article>';
+ top.forEach((s,i)=>{h+='<article class="radar-card"><div class="radar-eyebrow">0'+(i+1)+' / '+esc(s.league)+'</div><h2>'+esc(s.home)+' — '+esc(s.away)+'</h2>'+(s.anomaly?'<span class="radar-badge">Market Anomaly</span>':'')+'<div class="signal-active">'+esc(radarPick(s))+' @ '+frNum(s.odds)+'</div><div class="signal-meta">EV '+radarPct(s.ev)+' · Confidence '+(Number.isFinite(s.confidence)?s.confidence+' %':'—')+'</div><div class="radar-card-footer">'+radarRisk(s,stakes)+radarPlayButton(s)+'</div></article>';});
+ h+='</div>'+radarTables(radarData,all,stakes)+'<details class="radar-method"><summary>Méthode & limites des données</summary><p>Confidence = qualité et fraîcheur des données, pas probabilité de gagner. Forme et saison = différence moyenne xG créés − concédés (vert > 0,15 ; rouge < −0,15). Première rangée : domicile ; seconde : extérieur. H2H indisponible dans le flux actuel.</p><p>Mises indicatives : quart de Kelly avec probabilité réduite de 5 points, maximum 1 % par signal (0,5 % en profil prudent), budget global de 3 % incluant les mises engagées. Modèle football non validé par backtest ; modèles NBA et ATP à connecter. Aucune garantie de gain.</p></details></section>';
+ return h;
 }
-// Refresh only while visible. Expired recommendations disappear even on network failure.
-setInterval(()=>{if(UI.tab==='radar' && !document.hidden){render();radarRefresh();}},60000);
-
-function radarTables(data,spots){
+function radarTables(data,spots,stakes){
  const now=Date.now(),catalog=window.OZBRadarCatalog;
- let h='<section class="radar-browser"><h2>Explorer les marchés</h2><div class="radar-tabs" role="group" aria-label="Choisir un sport">';
- for(const [id,icon,name] of [['football','⚽','Foot'],['basketball','🏀','NBA'],['tennis','🎾','ATP']])h+='<button class="btn btn-soft" aria-pressed="'+(radarSport===id)+'" data-act="radar-sport" data-sport="'+id+'"><span aria-hidden="true">'+icon+'</span> '+name+'</button>';
- h+='</div><p class="hint">Cotes observées · actualisation quotidienne de démonstration. Les cotes de plus de 5 minutes sont marquées anciennes et ne déclenchent aucune mise.</p>';
- if(data?.oddsUpdatedAt)h+='<p class="hint">Dernière collecte : '+esc(new Date(data.oddsUpdatedAt).toLocaleString('fr-FR'))+' · zone '+esc(data.oddsRegion||'eu')+'</p>';
- if(!data||data.oddsStatus==='not_configured')h+='<p class="hint">The Odds API : clé à connecter côté serveur.</p>';
- else if(data.oddsStatus==='pending')h+='<p class="hint">Première collecte en attente.</p>';
- else if(data.oddsStatus==='partial')h+='<p class="hint">Collecte partielle : certaines compétitions sont indisponibles.</p>';
+ let h='<section class="radar-browser"><div class="radar-tabs" role="group" aria-label="Choisir un sport">';
+ for(const [id,icon,name] of [['football','⚽','Foot'],['basketball','🏀','NBA'],['tennis','🎾','ATP']])h+='<button class="btn btn-soft" aria-pressed="'+(radarSport===id)+'" data-act="radar-sport" data-sport="'+id+'">'+icon+' '+name+'</button>';
+ h+='</div><div class="radar-feed-status">Collecte quotidienne · '+esc(data?.oddsUpdatedAt?new Date(data.oddsUpdatedAt).toLocaleString('fr-FR'):'en attente')+' · '+esc(data?.oddsStatus==='partial'?'couverture partielle':'cotes anciennes après 5 min')+'</div>';
  const events=new Map();
  for(const e of data?.events||[])if(catalog.competition(e.competitionKey)?.sport===radarSport&&e.sport===radarSport&&Date.parse(e.kickoff)>now)events.set(e.id,e);
- for(const s of spots)if(s.sport===radarSport&&!events.has(s.fixtureId))events.set(s.fixtureId,{id:s.fixtureId,sport:s.sport,competitionKey:s.competitionKey,home:s.home,away:s.away,league:s.league,kickoff:s.kickoff,prices:[]});
+ for(const s of spots)if(s.sport===radarSport&&!events.has(s.fixtureId))events.set(s.fixtureId,{...s,id:s.fixtureId,prices:[]});
  const groups=new Map();for(const e of events.values()){if(!groups.has(e.competitionKey))groups.set(e.competitionKey,[]);groups.get(e.competitionKey).push(e);}
- if(!groups.size)h+='<div class="radar-card"><h3>Aucun match disponible</h3><p>'+({football:'Ligue 1, Premier League, Liga, Serie A, Bundesliga, Champions League et MLS.',basketball:'NBA uniquement.',tennis:'Tournois ATP couverts par le fournisseur, hors WTA.'}[radarSport])+'</p></div>';
+ if(!groups.size)h+='<div class="radar-empty"><h3>Aucun match disponible</h3><p>'+({football:'Ligue 1, Premier League, Liga, Serie A, Bundesliga, Champions League et MLS.',basketball:'NBA uniquement.',tennis:'Tournois ATP, hors WTA.'}[radarSport])+'</p></div>';
  for(const [key,list] of [...groups].sort((a,b)=>a[0].localeCompare(b[0]))){
- h+='<h3>'+esc(catalog.competition(key,list[0].league).name)+'</h3><div class="radar-table-wrap" tabindex="0" role="region" aria-label="Tableau des matchs"><table class="radar-table"><thead><tr><th>Match</th><th>Horaire</th><th>Cotes observées</th><th>Analyse / value</th></tr></thead><tbody>';
+ h+='<h3 class="radar-league">'+esc(catalog.competition(key,list[0].league).name)+' <small>'+list.length+' matchs</small></h3><div class="radar-table-wrap" tabindex="0" role="region" aria-label="Matchs '+esc(catalog.competition(key,list[0].league).name)+'"><table class="radar-table"><thead><tr><th>Horaire</th><th>Match</th><th>Forme · H2H · Saison</th><th>Signal / Cote</th><th>Risk Manager</th><th>Action</th></tr></thead><tbody>';
  for(const e of list.sort((a,b)=>Date.parse(a.kickoff)-Date.parse(b.kickoff))){
- const matches=spots.filter(s=>s.fixtureId===e.id),best=new Map();
- for(const q of e.prices||[]){if(!['home','away','draw'].includes(q.selection)||!Number.isFinite(q.odds)||!Number.isFinite(Date.parse(q.at)))continue;const prev=best.get(q.selection);if(!prev||Date.parse(q.at)>Date.parse(prev.at)||q.at===prev.at&&q.odds>prev.odds)best.set(q.selection,q);}
- const odds=[...best].map(([sel,q])=>esc(sel==='home'?e.home:sel==='away'?e.away:'Nul')+' : <b>'+frNum(q.odds)+'</b><small>'+esc(q.bookmaker)+' · '+esc(new Date(q.at).toLocaleString('fr-FR'))+(now-Date.parse(q.at)>300000?' · ancienne':'')+'</small>').join('<br>')||'—';
- const analysis=matches.length?matches.map(s=>esc(({home:'Domicile',away:'Extérieur',draw:'Nul',over:'Over 2,5',under:'Under 2,5',yes:'BTTS oui',no:'BTTS non'})[s.selection])+' · EV '+radarPct(s.ev)+' · qualité '+s.confidence+' %').join('<br>'):'Non évalué — données sportives / modèle manquants ou aucun signal retenu';
- h+='<tr><td>'+esc(e.home)+'<br>'+esc(e.away)+'</td><td>'+esc(new Date(e.kickoff).toLocaleString('fr-FR'))+'</td><td>'+odds+'</td><td>'+analysis+'</td></tr>';
+ const s=spots.find(s=>s.fixtureId===e.id),best=new Map();
+ for(const q of e.prices||[]){if(!['home','away','draw'].includes(q.selection)||!Number.isFinite(q.odds)||q.odds<=1||!Number.isFinite(Date.parse(q.at))||Date.parse(q.at)>now)continue;const p=best.get(q.selection);if(!p||Date.parse(q.at)>Date.parse(p.at)||q.at===p.at&&q.odds>p.odds)best.set(q.selection,q);}
+ const quotes=[...best].map(([sel,q])=>'<span class="quote" title="'+esc(q.bookmaker+' · '+new Date(q.at).toLocaleString('fr-FR'))+'">'+({home:'1',draw:'N',away:'2'})[sel]+' '+frNum(q.odds)+(now-Date.parse(q.at)>300000?' ⏱':'')+'</span>').join(' ');
+ h+='<tr><td class="radar-time">'+esc(new Date(e.kickoff).toLocaleDateString('fr-FR',{day:'2-digit',month:'2-digit'}))+' <b>'+esc(new Date(e.kickoff).toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'}))+'</b></td><td class="radar-match" title="'+esc(e.home+' — '+e.away)+'">'+esc(e.home)+' <span>—</span> '+esc(e.away)+'</td><td>'+radarIndicators(s||e)+'</td><td>'+(s?'<div class="signal-active">● SIGNAL : '+esc(radarPick(s))+' @ '+frNum(s.odds)+'</div><small>Confidence '+(Number.isFinite(s.confidence)?s.confidence+' %':'—')+' · EV '+radarPct(s.ev)+(s.anomaly?' · Market Anomaly':'')+'</small>':(quotes||'—')+'<small>Sans signal</small>')+'</td><td>'+(s?radarRisk(s,stakes):'<span class="muted">—</span>')+'</td><td>'+(s?radarPlayButton(s):'<button class="btn radar-play" disabled title="Aucun signal actif">Jouer</button>')+'</td></tr>';
  }
  h+='</tbody></table></div>';
  }
- return h+'<p class="hint">Les cotes seules ne produisent ni probabilité indépendante, ni Confidence Score. Le modèle xG actuel concerne le football ; les modèles NBA et ATP restent à développer.</p></section>';
+ return h+'</section>';
 }
+setInterval(()=>{if(UI.tab==='radar'&&!document.hidden){render();radarRefresh();}},60000);
 
 /* ---------- ajout de ticket ---------- */
 function methodsHtml() {
@@ -6176,6 +6166,8 @@ document.addEventListener("click", async (e) => {
     case "radar-sport":
       if(["football","basketball","tennis"].includes(el.dataset.sport))radarSport=el.dataset.sport;
       render(); break;
+    case "radar-play":
+      radarPlay(el.dataset.spot); break;
     case "radar-refresh":
       radarRefresh(); break;
     case "tab":
@@ -6440,6 +6432,8 @@ document.addEventListener("click", async (e) => {
       break;
     }
     case "m-manual":
+      if (paused()) { toast("Ajout désactivé pendant ta pause."); break; }
+      UI.tab = "tickets"; render();
       UI.draft = newDraft("manual");
       openForm();
       break;
@@ -7009,7 +7003,7 @@ document.addEventListener("click", async (e) => {
         sheetHead("Inviter un ami") +
           '<p class="lead">Ton ami reçoit 7 jours de Premium. Toi aussi, à son inscription.</p><div class="card" style="text-align:center"><div class="label">Ton code</div><div class="mega" style="font-size:44px;color:var(--accent)">' +
           code +
-          '</div></div><button class="btn btn-primary block" data-act="copy-text" data-v="Rejoins-moi sur OZB Bankroll avec mon code ' +
+          '</div></div><button class="btn btn-primary block" data-act="copy-text" data-v="Rejoins-moi sur OzbStacker avec mon code ' +
           code +
           ' : 7 jours de Premium offerts.">' +
           I("copy") +
@@ -7115,7 +7109,7 @@ document.addEventListener("click", async (e) => {
     case "legal":
       sheet(
         sheetHead("Conditions et confidentialité") +
-          "<div class=\"prose\"><p><b>Ce que fait l'app.</b> OZB Bankroll t'aide à suivre tes paris et ta bankroll. Ce n'est pas un site de paris : l'app ne prend aucun pari et ne touche pas à ton argent.</p><p><b>Aucune garantie de gain.</b> Les conseils de mise et les tickets OZB sont des aides à la décision. Les paris restent risqués.</p><p><b>18 ans et plus.</b> L'app est réservée aux personnes majeures.</p><p><b>Tes données.</b> Sans compte, elles restent sur ton téléphone. Avec un compte, ton e-mail sert seulement à retrouver ton compte. Elles ne sont jamais vendues. Tu peux tout effacer depuis Profil.</p><p><b>Mesure d'audience.</b> L'app compte de façon anonyme les ouvertures, inscriptions, ajouts de tickets et clics sur l'offre, pour savoir si elle est utile. Aucun nom, e-mail ni ticket n'est envoyé.</p><p><b>Contact.</b> ozb.prono@gmail.com</p><p class=\"hint\">Version provisoire, à faire valider avant la mise en ligne sur les stores.</p></div>"
+          "<div class=\"prose\"><p><b>Ce que fait l'app.</b> OzbStacker t'aide à suivre tes paris et ta bankroll. Ce n'est pas un site de paris : l'app ne prend aucun pari et ne touche pas à ton argent.</p><p><b>Aucune garantie de gain.</b> Les conseils de mise et les tickets OZB sont des aides à la décision. Les paris restent risqués.</p><p><b>18 ans et plus.</b> L'app est réservée aux personnes majeures.</p><p><b>Tes données.</b> Sans compte, elles restent sur ton téléphone. Avec un compte, ton e-mail sert seulement à retrouver ton compte. Elles ne sont jamais vendues. Tu peux tout effacer depuis Profil.</p><p><b>Mesure d'audience.</b> L'app compte de façon anonyme les ouvertures, inscriptions, ajouts de tickets et clics sur l'offre, pour savoir si elle est utile. Aucun nom, e-mail ni ticket n'est envoyé.</p><p><b>Contact.</b> ozb.prono@gmail.com</p><p class=\"hint\">Version provisoire, à faire valider avant la mise en ligne sur les stores.</p></div>"
       );
       break;
   }

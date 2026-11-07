@@ -1,6 +1,6 @@
 {
- "name": "OZB Bankroll",
- "short_name": "OZB Bankroll",
+ "name": "OzbStacker",
+ "short_name": "OzbStacker",
  "lang": "fr",
  "start_url": "./",
  "scope": "./",
